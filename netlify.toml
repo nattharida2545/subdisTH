@@ -1,0 +1,27 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "functions"  # Add this line to specify functions directory
+
+# Redirect API requests to Netlify Functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Handles routing for single page applications (keep this existing rule)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Configure proper MIME types for JavaScript modules (keep these existing header configs)
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "*.mjs"
+  [headers.values]
+    Content-Type = "application/javascript"

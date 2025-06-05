@@ -1,0 +1,138 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+/* Email Consent Screen Styles */
+.email-consent-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  text-align: left;
+}
+
+.email-user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.email-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #e6ecff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.email-avatar-placeholder img {
+  width: 40px;
+  height: 40px;
+}
+
+.email-tag {
+  background-color: #00c300;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.email-consent-form {
+  text-align: left;
+}
+
+.email-consent-form h3 {
+  margin-bottom: 15px;
+}
+
+.email-consent-form ul {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.email-consent-checkbox {
+  margin: 20px 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.email-consent-checkbox input {
+  margin-top: 4px;
+  margin-right: 10px;
+}
+
+.email-consent-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.email-button-submit {
+  background-color: #00c300;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.email-button-submit:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.email-button-cancel {
+  background-color: #f2f2f2;
+  border: 1px solid #dddddd;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}

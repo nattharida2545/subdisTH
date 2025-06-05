@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 180 25% 98%;
+    --foreground: 200 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 15% 15%;
+
+    --primary: 175 78% 42%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 175 78% 95%;
+    --accent-foreground: 175 78% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 175 78% 42%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 175 78% 97%;
+    --sidebar-foreground: 180 10% 20%;
+    --sidebar-primary: 175 78% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 175 78% 90%;
+    --sidebar-accent-foreground: 175 78% 25%;
+    --sidebar-border: 175 78% 90%;
+    --sidebar-ring: 175 78% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  h3 {
+    @apply text-xl sm:text-2xl;
+  }
+
+  h4 {
+    @apply text-lg sm:text-xl;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .dashboard-card {
+    @apply glass-card rounded-2xl p-6 transition-all duration-300;
+    transition-property: transform, box-shadow, opacity;
+  }
+  
+  .dashboard-card:hover {
+    @apply shadow-xl;
+    transform: translateY(-2px);
+  }
+  
+  .queue-number {
+    @apply text-5xl md:text-6xl font-bold tracking-tighter;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .page-transition-enter {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity 400ms, transform 400ms;
+  }
+  
+  .page-transition-exit {
+    opacity: 1;
+  }
+  
+  .page-transition-exit-active {
+    opacity: 0;
+    transition: opacity 400ms;
+  }
+  
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors;
+  }
+  
+  .sidebar-link-active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground font-medium;
+  }
+  
+  .queue-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  
+  .queue-badge-waiting {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .queue-badge-active {
+    @apply bg-green-100 text-green-800 animate-pulse-gentle;
+  }
+  
+  .queue-badge-completed {
+    @apply bg-gray-100 text-gray-800;
+  }
+  
+  .queue-badge-skipped {
+    @apply bg-amber-100 text-amber-800;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* For smooth animation on height transitions */
+.h-dynamic {
+  transition: height 0.3s ease;
+}
+
+/* Animations */
+.animate-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Improve scrollbar for the queue management page */
+.queue-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.queue-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  opacity: 0.6;
+}
+
+.queue-scrollbar::-webkit-scrollbar-thumb:hover {
+  opacity: 1;
+}
