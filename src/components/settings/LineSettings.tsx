@@ -49,14 +49,25 @@ const LineSettings = () => {
     );
   }
 
-  // Default settings if not available
-  const currentLineSettings = lineSettings || {
-    channelId: "1234567890",
-    channelSecret: "abcdefghijklmnopqrstuvwxyz",
-    accessToken: "12345678901234567890123456789012345678901234567890",
-    welcomeMessage: "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลชุมชนตัวอย่าง",
+  // Use saved settings from database if available, otherwise use default fallback
+  const currentLineSettings = savedLineSettings || lineSettings || {
+    channelId: "",
+    channelSecret: "",
+    accessToken: "",
+    loginChannelId: "",
+    loginChannelSecret: "",
+    callbackUrl: "https://subdisth-que.netlify.app/auth/line/callback",
+    liffId: "",
+    welcomeMessage: "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง",
     queueReceivedMessage: "คุณได้รับคิวหมายเลข {queueNumber} ประเภท: {queueType}\nระยะเวลารอโดยประมาณ: {estimatedWaitTime} นาที",
     queueCalledMessage: "เรียนคุณ {patientName}\nถึงคิวของคุณแล้ว! กรุณามาที่ช่องบริการ {counter}\nหมายเลขคิวของคุณคือ: {queueNumber}"
+  };
+
+  const currentTtsConfig = savedTtsConfig || ttsConfig || {
+    enabled: true,
+    volume: 1.0,
+    rate: 1.0,
+    language: 'th-TH'
   };
 
   return (
@@ -79,13 +90,13 @@ const LineSettings = () => {
             errors={errors}
           />
           
-          {/* <LineMessageTemplates
+          <LineMessageTemplates
             lineSettings={currentLineSettings}
             isEditing={isEditing}
             handleChange={handleChange}
             handleTestMessage={handleTestMessage}
             isTesting={isTestingMessage}
-          /> */}
+          />
           
           <LineActionButtons 
             isEditing={isEditing}

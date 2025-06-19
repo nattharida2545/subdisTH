@@ -1,6 +1,5 @@
 
 import * as React from 'react';
-import Layout from '@/components/layout/Layout';
 import { usePatients } from '@/hooks/usePatients';
 import QueueSummaryCards from '@/components/dashboard/QueueSummaryCards';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -20,7 +19,7 @@ const Dashboard = () => {
   const todayStats = useDashboardStats(completedQueues || []);
 
   return (
-    <Layout>
+    <div className="p-6">
       <DashboardHeader />
       
       <QueueSummaryCards 
@@ -39,7 +38,7 @@ const Dashboard = () => {
         patientsCount={patients?.length || 0}
         avgWaitTime={todayStats?.avgWaitTime || 0}
       />
-    </Layout>
+    </div>
   );
 };
 

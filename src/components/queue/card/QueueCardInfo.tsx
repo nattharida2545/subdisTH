@@ -1,11 +1,10 @@
 
-import React from 'react';
-import { InfoIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Queue } from '@/integrations/supabase/schema';
 import { formatQueueNumber } from '@/utils/queueFormatters';
-import QueueTypeLabel from '../QueueTypeLabel';
-import ServicePointBadge from '../ServicePointBadge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Calendar, Clock, User } from 'lucide-react';
+import { appointmentQueueService } from '@/services/appointmentQueueService';
 
 interface QueueCardInfoProps {
   queue: Queue;
@@ -20,46 +19,89 @@ const QueueCardInfo: React.FC<QueueCardInfoProps> = ({
   patientName,
   servicePointName,
   suggestedServicePointName,
-  showServicePointInfo = false
+  showServicePointInfo = true
 }) => {
-  const formattedNumber = formatQueueNumber(queue.type, queue.number);
-  
+  const [appointmentInfo, setAppointmentInfo] = useState<any>(null);
+
+  // Fetch appointment info if this queue is linked to an appointment
+  useEffect(() => {
+    const fetchAppointmentInfo = async () => {
+      if (queue.appointment_id) {
+        const appointment = await appointmentQueueService.getAppointmentByQueueId(queue.id);
+        setAppointmentInfo(appointment);
+      }
+    };
+
+    fetchAppointmentInfo();
+  }, [queue.id, queue.appointment_id]);
+
   return (
-    <div className="space-y-3">
-      {/* Queue Number and Patient Name */}
-      <div>
-        <div className="text-xl sm:text-2xl font-bold">{formattedNumber}</div>
-        <div className="text-gray-600 font-medium">{patientName}</div>
+    <div className="flex-1">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-2xl font-bold text-gray-900">
+          {formatQueueNumber(queue.type, queue.number)}
+        </span>
+        <Badge variant={queue.type === 'APPOINTMENT' ? 'default' : 'secondary'}>
+          {queue.type === 'APPOINTMENT' ? 'นัดหมาย' : queue.type}
+        </Badge>
+      </div>
+      
+      <div className="flex items-center gap-1 text-gray-700 mb-1">
+        <User className="w-4 h-4" />
+        <span className="font-medium">{patientName}</span>
       </div>
 
-      {/* Service Point Badge - More Prominent */}
-      {showServicePointInfo && (
-        <div className="flex items-center">
-          <ServicePointBadge
-            servicePointName={servicePointName}
-            suggestedServicePointName={suggestedServicePointName}
-            isAssigned={!!queue.service_point_id}
-            className="text-sm"
-          />
+      {/* Show appointment information if available */}
+      {appointmentInfo && (
+        <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
+          <div className="flex items-center gap-1 text-blue-700 text-sm mb-1">
+            <Calendar className="w-3 h-3" />
+            <span className="font-medium">นัดหมาย:</span>
+          </div>
+          <div className="text-sm text-blue-600">
+            <div className="flex items-center gap-1 mb-1">
+              <Clock className="w-3 h-3" />
+              <span>
+                {new Date(appointmentInfo.date).toLocaleDateString('th-TH', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+            <div className="font-medium">{appointmentInfo.purpose}</div>
+            {appointmentInfo.notes && (
+              <div className="text-xs text-blue-500 mt-1">{appointmentInfo.notes}</div>
+            )}
+          </div>
         </div>
       )}
       
-      {/* Queue Type and Notes */}
-      <div className="flex items-center flex-wrap gap-2">
-        <QueueTypeLabel queueType={queue.type} />
-        {queue.notes && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <InfoIcon className="w-4 h-4 text-gray-500" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{queue.notes}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-      </div>
+      {showServicePointInfo && (
+        <div className="mt-2">
+          {servicePointName ? (
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">จุดบริการ:</span> {servicePointName}
+            </div>
+          ) : suggestedServicePointName ? (
+            <div className="text-sm text-orange-600">
+              <span className="font-medium">แนะนำ:</span> {suggestedServicePointName}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-400">
+              ยังไม่ได้กำหนดจุดบริการ
+            </div>
+          )}
+        </div>
+      )}
+      
+      {queue.notes && (
+        <div className="mt-2 text-sm text-gray-600">
+          <span className="font-medium">หมายเหตุ:</span> {queue.notes}
+        </div>
+      )}
     </div>
   );
 };

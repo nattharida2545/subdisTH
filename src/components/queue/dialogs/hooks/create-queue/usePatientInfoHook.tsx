@@ -12,6 +12,7 @@ export const usePatientInfoHook = (): {
   newPatientCreationState: ReturnType<typeof useNewPatientCreation>;
   patientInfo: PatientInfo;
   handleSelectPatient: (id: string) => void;
+  handleAddNewPatient: () => void;
   resetPatientState: () => void;
 } => {
   // Patient search & selection state
@@ -21,7 +22,8 @@ export const usePatientInfoHook = (): {
     setPhoneNumber,
     showNewPatientForm: searchShowNewPatientForm,
     setShowNewPatientForm,
-    matchedPatients
+    matchedPatients,
+    resetPatientSearch
   } = patientSearchState;
 
   // Patient selection state
@@ -35,7 +37,8 @@ export const usePatientInfoHook = (): {
     setPatientPhone,
     lineId,
     setLineId,
-    handleSelectPatient: selectPatient
+    handleSelectPatient: selectPatient,
+    resetPatientSelection
   } = patientSelectionState;
 
   // New patient state
@@ -44,7 +47,9 @@ export const usePatientInfoHook = (): {
     showNewPatientForm: newPatientFormVisible,
     setShowNewPatientForm: setNewPatientFormVisible,
     newPatientName,
-    setNewPatientName
+    setNewPatientName,
+    handleAddNewPatient: originalHandleAddNewPatient,
+    resetNewPatientCreation
   } = newPatientCreationState;
 
   // Create the final values for the patient information
@@ -60,11 +65,51 @@ export const usePatientInfoHook = (): {
   const handleSelectPatient = React.useCallback((id: string) => {
     logger.verbose(`Selecting patient with ID: ${id}`);
     selectPatient(id, matchedPatients);
-  }, [selectPatient, matchedPatients]);
+    // When a patient is selected, hide the new patient form
+    setShowNewPatientForm(false);
+    setNewPatientFormVisible(false);
+  }, [selectPatient, matchedPatients, setShowNewPatientForm, setNewPatientFormVisible]);
 
-  // Reset all patient-related states
+  // Enhanced handleAddNewPatient that clears selection and shows form
+  const handleAddNewPatient = React.useCallback(() => {
+    logger.debug('Handle add new patient - clearing selection and showing form');
+    
+    // Clear any selected patient
+    setPatientId('');
+    setPatientName('');
+    setPatientPhone('');
+    setLineId('');
+    
+    // Show the new patient form
+    setShowNewPatientForm(true);
+    setNewPatientFormVisible(true);
+    
+    // Call the original handler
+    originalHandleAddNewPatient();
+  }, [
+    setPatientId,
+    setPatientName, 
+    setPatientPhone,
+    setLineId,
+    setShowNewPatientForm,
+    setNewPatientFormVisible,
+    originalHandleAddNewPatient
+  ]);
+
+  // Enhanced reset function that clears everything
   const resetPatientState = React.useCallback(() => {
-    logger.debug('Resetting patient state');
+    logger.debug('Resetting patient state completely');
+    
+    // Reset search state
+    resetPatientSearch();
+    
+    // Reset selection state  
+    resetPatientSelection();
+    
+    // Reset new patient state
+    resetNewPatientCreation();
+    
+    // Additional manual resets to ensure clean state
     setPhoneNumber('');
     setPatientId('');
     setPatientName('');
@@ -73,6 +118,9 @@ export const usePatientInfoHook = (): {
     setShowNewPatientForm(false);
     setNewPatientName('');
   }, [
+    resetPatientSearch,
+    resetPatientSelection, 
+    resetNewPatientCreation,
     setPhoneNumber, 
     setPatientId, 
     setPatientName, 
@@ -99,6 +147,7 @@ export const usePatientInfoHook = (): {
     newPatientCreationState,
     patientInfo,
     handleSelectPatient,
+    handleAddNewPatient,
     resetPatientState
   };
 };

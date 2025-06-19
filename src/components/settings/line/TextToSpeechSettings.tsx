@@ -36,7 +36,7 @@ const TextToSpeechSettings: React.FC<TextToSpeechSettingsProps> = ({
   const testVoice = () => {
     if ('speechSynthesis' in window) {
       const msg = new SpeechSynthesisUtterance();
-      msg.text = 'ทดสอบเสียงประกาศภาษาไทย ระบบคิวห้องยาโรงพยาบาลชุมชนตัวอย่าง';
+      msg.text = 'ทดสอบเสียงประกาศภาษาไทย ระบบคิวห้องยาโรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง';
       msg.lang = ttsConfig.language;
       msg.volume = ttsConfig.volume;
       msg.rate = ttsConfig.rate;

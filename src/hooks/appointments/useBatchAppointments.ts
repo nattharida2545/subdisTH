@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Appointment, AppointmentStatus } from '@/integrations/supabase/schema';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { v4 as uuidv4 } from 'uuid';
 
 interface BatchAppointmentData {
   date: string;
@@ -22,7 +21,6 @@ export const useBatchAppointments = () => {
 
   const createBatchAppointments = async (data: BatchAppointmentData) => {
     const { date, patientSlots, purpose, notes } = data;
-    const batchId = uuidv4(); // Generate a unique batch ID
     
     try {
       setLoading(true);
@@ -45,8 +43,7 @@ export const useBatchAppointments = () => {
             date: appointmentDate.toISOString(),
             purpose,
             notes,
-            status: 'SCHEDULED' as AppointmentStatus,
-            batch_id: batchId // Store the batch ID for grouping
+            status: 'SCHEDULED' as AppointmentStatus
           }])
           .select();
           

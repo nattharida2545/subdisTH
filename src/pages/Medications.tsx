@@ -1,7 +1,6 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import Layout from '@/components/layout/Layout';
 import { PlusCircle } from 'lucide-react';
 import MedicationsSummaryCards from '@/components/medications/MedicationsSummaryCards';
 import MedicationsTabs from '@/components/medications/MedicationsTabs';
@@ -45,7 +44,7 @@ const MedicationsContent = () => {
   }
 
   return (
-    <>
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">ยาและเวชภัณฑ์</h1>
@@ -87,17 +86,15 @@ const MedicationsContent = () => {
         addMedication={addMedication}
         updateMedication={updateMedication}
       />
-    </>
+    </div>
   );
 };
 
 const Medications = () => {
   return (
-    <Layout>
-      <MedicationsProvider>
-        <MedicationsContent />
-      </MedicationsProvider>
-    </Layout>
+    <MedicationsProvider>
+      <MedicationsContent />
+    </MedicationsProvider>
   );
 };
 

@@ -1,9 +1,9 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ListChecks, BarChart, Users, Pill, Calendar, Clock, PlusCircle } from 'lucide-react';
+import { ListChecks, BarChart, Users, Pill, Calendar, Clock, PlusCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { appointmentQueueService } from '@/services/appointmentQueueService';
 
 interface DashboardCardsProps {
   waitingQueues: any[];
@@ -20,6 +20,22 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
   patientsCount,
   avgWaitTime
 }) => {
+  // Auto-sync appointments to queues when dashboard loads
+  useEffect(() => {
+    const syncAppointments = async () => {
+      console.log('[DashboardCards] Auto-syncing appointments to queues...');
+      await appointmentQueueService.createQueuesFromAppointments();
+      await appointmentQueueService.syncAppointmentQueueStatus();
+    };
+    
+    syncAppointments();
+  }, []);
+
+  const handleSyncAppointments = async () => {
+    await appointmentQueueService.createQueuesFromAppointments();
+    await appointmentQueueService.syncAppointmentQueueStatus();
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <Card className="h-full bg-gradient-to-br from-blue-50 to-purple-50 hover:shadow-md border-blue-100">
@@ -37,16 +53,27 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
         </CardContent>
         <CardFooter className="pt-2 flex justify-between">
           <Button asChild variant="outline" size="sm" className="text-blue-600 border-blue-200">
-            <Link to="/queue/management">
+            <Link to="/queue">
               จัดการคิว
             </Link>
           </Button>
-          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Link to="/queue/create">
-              <PlusCircle className="h-3 w-3 mr-1" />
-              สร้างคิวใหม่
-            </Link>
-          </Button>
+          <div className="flex gap-1">
+            <Button 
+              onClick={handleSyncAppointments}
+              variant="outline" 
+              size="sm" 
+              className="text-green-600 border-green-200"
+              title="ซิงค์การนัดหมายกับคิว"
+            >
+              <RefreshCw className="h-3 w-3" />
+            </Button>
+            <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Link to="/queue/create">
+                <PlusCircle className="h-3 w-3 mr-1" />
+                สร้างคิวใหม่
+              </Link>
+            </Button>
+          </div>
         </CardFooter>
       </Card>
       
@@ -118,7 +145,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
         </Card>
       </Link>
       
-      <Link to="/queue/history" className="transition-transform hover:scale-105">
+      <Link to="/queue-history" className="transition-transform hover:scale-105">
         <Card className="h-full bg-gradient-to-br from-purple-50 to-violet-50 hover:shadow-md border-purple-100">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center">

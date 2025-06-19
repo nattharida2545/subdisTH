@@ -9,13 +9,13 @@ import { QueueType, ensureValidFormat, ensureValidAlgorithm } from './useQueueTy
 import { SettingsFormValues } from '@/contexts/SettingsContext';
 
 const defaultValues: SettingsFormValues = {
-  hospital_name: 'โรงพยาบาลตัวอย่าง',
-  hospital_address: '123 ถนนกรุงเทพ เขตปทุมวัน กรุงเทพฯ 10330',
-  hospital_phone: '02-123-4567',
-  hospital_website: 'https://example-hospital.com',
-  pharmacy_name: 'ห้องยาโรงพยาบาลตัวอย่าง',
-  pharmacy_phone: '02-123-4568',
-  pharmacy_email: 'pharmacy@example-hospital.com',
+  hospital_name: 'โรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง',
+  hospital_address: 'หมู่ 7 ตำบลหนองแวง อำเภอกุดรัง จังหวัดมหาสารคาม 44130',
+  hospital_phone: '',
+  hospital_website: '',
+  pharmacy_name: 'ห้องยาโรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง',
+  pharmacy_phone: '',
+  pharmacy_email: '',
   queue_types: initialQueueTypes,
   queue_reset_daily: true,
   queue_start_number: 1,

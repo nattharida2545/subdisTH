@@ -4,11 +4,7 @@ import { useQueues } from '@/hooks/useQueues';
 import { usePatients } from '@/hooks/usePatients';
 import { useServicePoints } from '@/hooks/useServicePoints';
 import { QueueStatus, Patient } from '@/integrations/supabase/schema';
-import { QueueAlgorithmType } from '@/utils/queueAlgorithms';
-import QueueBoardHeader from '@/components/queue/QueueBoardHeader';
-import QueueBoardAlgorithmInfo from './QueueBoardAlgorithmInfo';
 import QueueBoardContent from './QueueBoardContent';
-import HospitalFooter from '@/components/queue/HospitalFooter';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { createLogger } from '@/utils/logger';
@@ -26,10 +22,6 @@ const QUEUE_STATUS = {
 const QueueBoardContainer = () => {
   logger.debug('Rendering QueueBoardContainer');
   
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [currentAlgorithm, setCurrentAlgorithm] = useState<QueueAlgorithmType>(QueueAlgorithmType.FIFO);
-  
   // Fetch data from Supabase
   const { getQueuesByStatus, sortQueues } = useQueues();
   const { patients } = usePatients();
@@ -37,23 +29,6 @@ const QueueBoardContainer = () => {
   const [activeQueues, setActiveQueues] = useState([]);
   const [waitingQueues, setWaitingQueues] = useState([]);
   const [completedQueues, setCompletedQueues] = useState([]);
-  
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, []);
-  
-  // Load algorithm from localStorage
-  useEffect(() => {
-    const savedAlgorithm = localStorage.getItem('queue_algorithm');
-    if (savedAlgorithm) {
-      setCurrentAlgorithm(savedAlgorithm as QueueAlgorithmType);
-    }
-  }, []);
   
   // Fetch queues data and set up real-time subscription
   useEffect(() => {
@@ -113,37 +88,14 @@ const QueueBoardContainer = () => {
     return servicePoints.find(sp => sp.id === servicePointId);
   };
   
-  // Get the current algorithm name for display
-  const getCurrentAlgorithmName = () => {
-    switch (currentAlgorithm) {
-      case QueueAlgorithmType.FIFO: return "First In, First Out (FIFO)";
-      case QueueAlgorithmType.PRIORITY: return "ลำดับความสำคัญ (Priority Queue)";
-      case QueueAlgorithmType.MULTILEVEL: return "หลายระดับ (Multilevel Queue)";
-      case QueueAlgorithmType.MULTILEVEL_FEEDBACK: return "ปรับความสำคัญตามเวลารอคอย (Multilevel Feedback)";
-      default: return "อัลกอริทึมเรียกคิว";
-    }
-  };
-  
   return (
-    <div className="min-h-screen bg-pharmacy-50">
-      <QueueBoardHeader 
-        currentTime={currentTime}
-        soundEnabled={soundEnabled}
-        setSoundEnabled={setSoundEnabled}
-      />
-      
-      <QueueBoardAlgorithmInfo algorithmName={getCurrentAlgorithmName()} />
-      
-      <QueueBoardContent 
-        activeQueues={activeQueues}
-        waitingQueues={waitingQueues}
-        completedQueues={completedQueues}
-        findPatient={findPatient}
-        findServicePoint={findServicePoint}
-      />
-      
-      <HospitalFooter />
-    </div>
+    <QueueBoardContent 
+      activeQueues={activeQueues}
+      waitingQueues={waitingQueues}
+      completedQueues={completedQueues}
+      findPatient={findPatient}
+      findServicePoint={findServicePoint}
+    />
   );
 };
 

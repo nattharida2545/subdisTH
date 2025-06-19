@@ -5,6 +5,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import QueueSettings from './QueueSettings';
 import GeneralSettings from './GeneralSettings';
 import LineSettings from './LineSettings';
+import SmsSettings from './SmsSettings';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import SettingsFormActions from './SettingsFormActions';
 import ServicePointSettings from './ServicePointSettings';
@@ -56,6 +57,10 @@ const SettingsForm: React.FC = () => {
           />
           <SettingsFormActions isSubmitting={isSubmitting} />
         </form>
+      </TabsContent>
+
+      <TabsContent value="sms" className="space-y-6">
+        <SmsSettings />
       </TabsContent>
       
       <TabsContent value="line" className="space-y-6">

@@ -4,7 +4,7 @@ import { QueueType, ensureValidFormat, ensureValidAlgorithm } from '@/hooks/useQ
 
 // Helper function to safely cast a string to QueueTypeEnum
 export const ensureQueueTypeEnum = (type: string): QueueTypeEnum => {
-  const validTypes: QueueTypeEnum[] = ['GENERAL', 'PRIORITY', 'ELDERLY', 'FOLLOW_UP'];
+  const validTypes: QueueTypeEnum[] = ['GENERAL', 'PRIORITY', 'ELDERLY', 'FOLLOW_UP', 'APPOINTMENT'];
   return validTypes.includes(type as QueueTypeEnum) 
     ? type as QueueTypeEnum 
     : 'GENERAL';

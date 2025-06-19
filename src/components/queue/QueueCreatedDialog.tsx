@@ -22,6 +22,7 @@ interface QueueCreatedDialogProps {
   patientPhone?: string;
   patientLineId?: string;
   purpose?: string;
+  onDialogClose?: () => void; // New prop to handle complete reset
 }
 
 const QueueCreatedDialog: React.FC<QueueCreatedDialogProps> = ({
@@ -33,6 +34,7 @@ const QueueCreatedDialog: React.FC<QueueCreatedDialogProps> = ({
   patientPhone = '',
   patientLineId = '',
   purpose = '',
+  onDialogClose,
 }) => {
   logger.debug(`Rendering with open=${open}, queueNumber=${queueNumber}, queueType=${queueType}`);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -73,6 +75,19 @@ const QueueCreatedDialog: React.FC<QueueCreatedDialogProps> = ({
     }
   }, [queueNumber, queueType, patientName, patientPhone, patientLineId, purpose, estimatedWaitTime]);
 
+  // Enhanced close handler that triggers complete reset
+  const handleClose = React.useCallback(() => {
+    logger.debug('QueueCreatedDialog closing, triggering complete reset');
+    onOpenChange(false);
+    
+    // Trigger the parent dialog reset after a short delay to ensure proper state cleanup
+    if (onDialogClose) {
+      setTimeout(() => {
+        onDialogClose();
+      }, 100);
+    }
+  }, [onOpenChange, onDialogClose]);
+
   // Force focus on dialog when it opens - using a stable dependency array
   useEffect(() => {
     if (open && dialogRef.current) {
@@ -89,7 +104,7 @@ const QueueCreatedDialog: React.FC<QueueCreatedDialogProps> = ({
   return (
     <Dialog 
       open={open} 
-      onOpenChange={onOpenChange}
+      onOpenChange={handleClose}
     >
       <DialogContent 
         ref={dialogRef} 
@@ -108,7 +123,7 @@ const QueueCreatedDialog: React.FC<QueueCreatedDialogProps> = ({
         
         <DialogFooterActions 
           onPrint={handlePrint}
-          onClose={() => onOpenChange(false)}
+          onClose={handleClose}
         />
       </DialogContent>
     </Dialog>

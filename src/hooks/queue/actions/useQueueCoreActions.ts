@@ -7,6 +7,7 @@ import { announceQueue } from '@/utils/textToSpeech';
 import { getServicePointById } from '@/utils/servicePointUtils';
 import { createLogger } from '@/utils/logger';
 import { mapToQueueObject } from '@/utils/queue/queueMapping';
+import { useSmsNotifications } from '@/hooks/useSmsNotifications';
 
 const logger = createLogger('useQueueCoreActions');
 
@@ -15,6 +16,8 @@ export const useQueueCoreActions = (
   updateQueueInState: (queue: Queue) => void,
   voiceEnabled: boolean
 ) => {
+  const { sendSmsToNextQueues } = useSmsNotifications();
+
   // Call next queue for a specific service point
   const callQueue = useCallback(async (queueId: string, servicePointId?: string): Promise<Queue | null> => {
     try {
@@ -73,6 +76,14 @@ export const useQueueCoreActions = (
           );
         }
         
+        // Send SMS notifications to next 3 queues for all service points
+        try {
+          await sendSmsToNextQueues();
+        } catch (smsError) {
+          logger.error('SMS notification error (non-blocking):', smsError);
+          // Don't fail the main queue call if SMS fails
+        }
+        
         toast.success(`เรียกคิวหมายเลข ${queue.number} เรียบร้อยแล้ว`);
         return typedQueue;
       }
@@ -83,7 +94,7 @@ export const useQueueCoreActions = (
       toast.error('เกิดข้อผิดพลาดในการเรียกคิว');
       return null;
     }
-  }, [queues, updateQueueInState, voiceEnabled]);
+  }, [queues, updateQueueInState, voiceEnabled, sendSmsToNextQueues]);
 
   // Return skipped queue to waiting
   const returnSkippedQueueToWaiting = useCallback(async (queueId: string): Promise<Queue | null> => {

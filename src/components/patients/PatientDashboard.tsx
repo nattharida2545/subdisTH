@@ -83,7 +83,7 @@ const PatientDashboard = () => {
   };
 
   return (
-    <>
+    <div className="p-6">
       <PatientHeader onAddPatient={handleAddNewPatient} />
       
       <PatientStats patients={patients} />
@@ -108,7 +108,7 @@ const PatientDashboard = () => {
           onEditPatient={handleEditPatient}
         />
       )}
-    </>
+    </div>
   );
 };
 

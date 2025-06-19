@@ -1,17 +1,18 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Patient } from '@/integrations/supabase/schema';
 import { useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { LogOut, Trash2, AlertCircle, User } from 'lucide-react';
+import { Patient, Queue } from '@/integrations/supabase/schema';
+import PatientCardWithQueue from './PatientCardWithQueue';
 
 interface PatientSelectionViewProps {
   patients: Patient[];
   selectedPatient: Patient | null;
   onSelectPatient: (patient: Patient) => void;
   onLogout: () => void;
-  onClearQueueHistory?: () => void; // Add this prop
+  onClearQueueHistory: () => void;
 }
 
 const PatientSelectionView: React.FC<PatientSelectionViewProps> = ({
@@ -22,78 +23,137 @@ const PatientSelectionView: React.FC<PatientSelectionViewProps> = ({
   onClearQueueHistory
 }) => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+
+  const handleAppointmentsClick = (patient: Patient) => {
+    console.log('[PatientSelectionView] Appointments button clicked for patient:', patient.name);
+    
+    try {
+      // Store the selected patient context for the appointments page
+      sessionStorage.setItem('appointmentPatientContext', JSON.stringify(patient));
+      navigate('/patient-portal/appointments');
+      console.log('[PatientSelectionView] Navigation to appointments initiated for patient:', patient.name);
+    } catch (error) {
+      console.error('[PatientSelectionView] Navigation error:', error);
+    }
+  };
+
+  const handleMedicationsClick = (patient: Patient) => {
+    console.log('[PatientSelectionView] Medications button clicked for patient:', patient.name);
+    
+    try {
+      // Store the selected patient context for medications page
+      sessionStorage.setItem('medicationPatientContext', JSON.stringify(patient));
+      // Navigate to a medications page (you may need to create this route)
+      navigate('/patient-portal/medications');
+      console.log('[PatientSelectionView] Navigation to medications initiated for patient:', patient.name);
+    } catch (error) {
+      console.error('[PatientSelectionView] Medications navigation error:', error);
+    }
+  };
+
+  const handleProfileClick = (patient: Patient) => {
+    console.log('[PatientSelectionView] Profile button clicked for patient:', patient.name);
+    
+    try {
+      // Store the selected patient context for the profile page
+      sessionStorage.setItem('profilePatientContext', JSON.stringify(patient));
+      navigate('/patient-portal/profile');
+      console.log('[PatientSelectionView] Navigation to profile initiated for patient:', patient.name);
+    } catch (error) {
+      console.error('[PatientSelectionView] Profile navigation error:', error);
+    }
+  };
+
+  const handleQueueClick = (patient: Patient, queue: Queue) => {
+    console.log('[PatientSelectionView] Queue button clicked for patient:', patient.name, 'Queue:', queue.id);
+    
+    try {
+      // Store both patient and queue context
+      sessionStorage.setItem('queuePatientContext', JSON.stringify(patient));
+      sessionStorage.setItem('activeQueueContext', JSON.stringify(queue));
+      // Navigate back to the main patient portal to show active queue view
+      navigate('/patient-portal');
+      console.log('[PatientSelectionView] Navigation to queue view initiated');
+    } catch (error) {
+      console.error('[PatientSelectionView] Queue navigation error:', error);
+    }
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 p-2 sm:p-4">
-      <div className="flex justify-between items-center mb-3 sm:mb-4">
-        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-pharmacy-700`}>
-          ระบบติดตามคิวผู้ป่วย
-        </h1>
-        <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={onLogout}>
-          ออกจากระบบ
-        </Button>
-      </div>
-      
-      <Card className="mb-3 sm:mb-4">
-        <CardHeader className="pb-2">
-          <CardTitle>เลือกผู้ป่วย</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {patients.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">ไม่พบข้อมูลผู้ป่วย</p>
-          ) : (
-            <div className="grid gap-2">
-              {patients.map(patient => (
-                <Button
-                  key={patient.id}
-                  variant={selectedPatient?.id === patient.id ? "default" : "outline"}
-                  className="w-full justify-start text-left"
-                  onClick={() => onSelectPatient(patient)}
-                >
-                  <div className="truncate">
-                    <span className="font-medium">{patient.name}</span>
-                    {patient.phone && (
-                      <span className="ml-2 text-sm text-gray-500">{patient.phone}</span>
-                    )}
-                  </div>
-                </Button>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      
-      <Card className="flex-1">
-        <CardHeader className="pb-2">
-          <CardTitle>ไม่มีคิวที่รอดำเนินการ</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 py-6">
-            คุณไม่มีคิวที่รอดำเนินการอยู่ในขณะนี้
-          </p>
-          
-          <div className="text-center mt-4 space-y-2">
-            {onClearQueueHistory && (
-              <Button 
-                variant="outline" 
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">เลือกผู้ป่วย</h1>
+          <Button
+            variant="outline"
+            onClick={onLogout}
+            className="text-red-600 border-red-300 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            ออกจากระบบ
+          </Button>
+        </div>
+
+        {/* Multiple patients info */}
+        {patients.length > 1 && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-blue-800">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">
+                  พบข้อมูลผู้ป่วย {patients.length} รายการ กรุณาเลือกผู้ป่วยที่ต้องการจัดการข้อมูล
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Patient Cards */}
+        <div className="space-y-4 mb-6">
+          {patients.map((patient) => (
+            <PatientCardWithQueue
+              key={patient.id}
+              patient={patient}
+              isSelected={selectedPatient?.id === patient.id}
+              onSelect={onSelectPatient}
+              onAppointmentsClick={handleAppointmentsClick}
+              onMedicationsClick={handleMedicationsClick}
+              onProfileClick={handleProfileClick}
+              onQueueClick={handleQueueClick}
+            />
+          ))}
+        </div>
+
+        {/* Clear queue history button */}
+        {/* {selectedPatient && (
+          <Card>
+            <CardHeader>
+              <CardTitle>การจัดการระบบ - {selectedPatient.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
                 onClick={onClearQueueHistory}
-                className={isMobile ? "text-sm w-full" : "w-full"}
+                className="w-full text-orange-600 border-orange-300 hover:bg-orange-50"
               >
+                <Trash2 className="w-4 h-4 mr-2" />
                 ล้างประวัติคิวเก่า
               </Button>
-            )}
-            
-            {/* <Button 
-              variant="outline" 
-              onClick={() => navigate('/')}
-              className={isMobile ? "text-sm w-full" : "w-full"}
-            >
-              กลับไปหน้าหลัก
-            </Button> */}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )} */}
+
+        {/* No selection message */}
+        {!selectedPatient && patients.length > 0 && (
+          <Card className="border-gray-200">
+            <CardContent className="p-6 text-center text-gray-500">
+              <User className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+              <p>กรุณาเลือกผู้ป่วยที่ต้องการจัดการข้อมูล</p>
+              <p className="text-sm mt-1">คลิกที่การ์ดผู้ป่วยด้านบนเพื่อเลือก</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };

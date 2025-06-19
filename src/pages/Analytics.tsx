@@ -1,7 +1,6 @@
 
 import * as React from 'react';
 import { DirectionProvider } from '@radix-ui/react-direction';
-import Layout from '@/components/layout/Layout';
 import { useQueues } from '@/hooks/useQueues';
 import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
 import AnalyticsContainer from '@/components/analytics/AnalyticsContainer';
@@ -16,14 +15,12 @@ const Analytics = () => {
   };
 
   return (
-    <Layout fullWidth={true}>
-      <div className="container mx-auto p-6">
-        <DirectionProvider dir="ltr">
-          <AnalyticsHeader />
-          <AnalyticsContainer queues={queues} sortQueues={sortQueuesWrapper} />
-        </DirectionProvider>
-      </div>
-    </Layout>
+    <div className="p-6">
+      <DirectionProvider dir="ltr">
+        <AnalyticsHeader />
+        <AnalyticsContainer queues={queues} sortQueues={sortQueuesWrapper} />
+      </DirectionProvider>
+    </div>
   );
 };
 

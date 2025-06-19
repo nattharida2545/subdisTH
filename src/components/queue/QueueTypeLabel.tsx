@@ -15,6 +15,7 @@ const QueueTypeLabel: React.FC<QueueTypeLabelProps> = ({ queueType, className })
       case 'PRIORITY': return 'ด่วน';
       case 'ELDERLY': return 'ผู้สูงอายุ';
       case 'FOLLOW_UP': return 'ติดตามการใช้ยา';
+      case 'APPOINTMENT': return 'นัดหมาย';
       default: return 'ไม่ระบุ';
     }
   };
@@ -25,6 +26,7 @@ const QueueTypeLabel: React.FC<QueueTypeLabelProps> = ({ queueType, className })
       case 'PRIORITY': return 'text-red-600 bg-red-50';
       case 'ELDERLY': return 'text-amber-600 bg-amber-50';
       case 'FOLLOW_UP': return 'text-purple-600 bg-purple-50';
+      case 'APPOINTMENT': return 'text-green-600 bg-green-50';
       default: return 'text-gray-600 bg-gray-50';
     }
   };

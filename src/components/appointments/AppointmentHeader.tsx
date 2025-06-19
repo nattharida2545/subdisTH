@@ -5,9 +5,26 @@ import { Plus, Users } from 'lucide-react';
 import { CreateAppointmentDialog } from './create-dialog/CreateAppointmentDialog';
 import { BatchAppointmentDialog } from './batch-dialog/BatchAppointmentDialog';
 
-const AppointmentHeader: React.FC = () => {
+interface AppointmentHeaderProps {
+  onAppointmentsRefresh?: () => void;
+}
+
+const AppointmentHeader: React.FC<AppointmentHeaderProps> = ({ onAppointmentsRefresh }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
+
+  const handleCreateSuccess = () => {
+    if (onAppointmentsRefresh) {
+      onAppointmentsRefresh();
+    }
+    setIsDialogOpen(false);
+  };
+
+  const handleBatchSuccess = () => {
+    if (onAppointmentsRefresh) {
+      onAppointmentsRefresh();
+    }
+  };
 
   return (
     <div className="flex justify-between items-center mb-6">
@@ -43,6 +60,7 @@ const AppointmentHeader: React.FC = () => {
       <BatchAppointmentDialog
         open={isBatchDialogOpen}
         onOpenChange={setIsBatchDialogOpen}
+        onAppointmentsCreated={handleBatchSuccess}
       />
     </div>
   );

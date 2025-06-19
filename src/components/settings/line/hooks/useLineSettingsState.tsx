@@ -3,12 +3,16 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { LineSettings, TextToSpeechConfig } from '../types';
 
 export const useLineSettingsState = () => {
-  // Define default values
+  // Define default values (empty, not hardcoded)
   const defaultSettings: LineSettings = {
-    channelId: "1234567890",
-    channelSecret: "abcdefghijklmnopqrstuvwxyz",
-    accessToken: "12345678901234567890123456789012345678901234567890",
-    welcomeMessage: "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลชุมชนตัวอย่าง",
+    channelId: "",
+    channelSecret: "",
+    accessToken: "",
+    loginChannelId: "",
+    loginChannelSecret: "",
+    callbackUrl: "https://subdisth-que.netlify.app/auth/line/callback",
+    liffId: "",
+    welcomeMessage: "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง",
     queueReceivedMessage: "คุณได้รับคิวหมายเลข {queueNumber} ประเภท: {queueType}\nระยะเวลารอโดยประมาณ: {estimatedWaitTime} นาที",
     queueCalledMessage: "เรียนคุณ {patientName}\nถึงคิวของคุณแล้ว! กรุณามาที่ช่องบริการ {counter}\nหมายเลขคิวของคุณคือ: {queueNumber}"
   };
@@ -47,7 +51,11 @@ export const useLineSettingsState = () => {
     const savedSettings = localStorage.getItem('lineSettings');
     if (savedSettings) {
       try {
-        setLineSettings(JSON.parse(savedSettings));
+        const parsed = JSON.parse(savedSettings);
+        // Only use localStorage as fallback if it has actual values
+        if (parsed.channelId && parsed.channelSecret && parsed.accessToken) {
+          setLineSettings(parsed);
+        }
       } catch (error) {
         console.error('Error parsing saved LINE settings:', error);
       }

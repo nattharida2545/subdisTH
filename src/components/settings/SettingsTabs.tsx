@@ -14,12 +14,11 @@ const SettingsTabs: React.FC<SettingsTabsProps> = ({ children }) => {
   
   return (
     <Tabs defaultValue="general" className="w-full">
-      <TabsList className="grid grid-cols-5 mb-8">
+      <TabsList className="grid grid-cols-4 mb-8">
         <TabsTrigger value="general">ทั่วไป</TabsTrigger>
         <TabsTrigger value="queue">คิว</TabsTrigger>
-        {/* <TabsTrigger value="notifications">แจ้งเตือน</TabsTrigger> */}
+        <TabsTrigger value="sms">SMS</TabsTrigger>
         <TabsTrigger value="line">LINE</TabsTrigger>
-        {/* <TabsTrigger value="developer">Developer</TabsTrigger> */}
       </TabsList>
       
       {children}

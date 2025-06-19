@@ -44,19 +44,28 @@ const Layout: React.FC<LayoutProps> = ({ children, className, fullWidth = false 
           className
         )}
       >
-        <div className={cn(
-          "animate-fade-in",
-          fullWidth ? "w-full h-full" : "container mx-auto p-6"
-        )}>
-          {/* Debug overlay in development */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="fixed top-2 right-2 bg-black/70 text-white text-xs p-1 rounded z-50">
-              Layout rendered
-            </div>
-          )}
-          
-          {children}
-        </div>
+        {/* Apply full width with no padding/container when fullWidth is true */}
+        {fullWidth ? (
+          <div className="animate-fade-in w-full h-full">
+            {/* Debug overlay in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="fixed top-2 right-2 bg-black/70 text-white text-xs p-1 rounded z-50">
+                Layout rendered (fullWidth)
+              </div>
+            )}
+            {children}
+          </div>
+        ) : (
+          <div className="container mx-auto p-6 animate-fade-in">
+            {/* Debug overlay in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="fixed top-2 right-2 bg-black/70 text-white text-xs p-1 rounded z-50">
+                Layout rendered (container)
+              </div>
+            )}
+            {children}
+          </div>
+        )}
       </main>
     </div>
   );

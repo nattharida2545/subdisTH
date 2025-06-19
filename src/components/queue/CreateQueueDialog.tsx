@@ -90,6 +90,14 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
     onOpenChange(false);
   }, [onOpenChange]);
 
+  // Handle complete reset when QueueCreatedDialog closes
+  const handleQueueCreatedDialogClose = React.useCallback(() => {
+    logger.debug('QueueCreatedDialog closed, performing complete reset');
+    resetState();
+    // Also close the main create queue dialog to return to clean state
+    onOpenChange(false);
+  }, [resetState, onOpenChange]);
+
   return (
     <>
       <Dialog 
@@ -142,6 +150,7 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
         patientPhone={finalPatientPhone}
         patientLineId={finalPatientLineId}
         purpose={createdPurpose}
+        onDialogClose={handleQueueCreatedDialogClose}
       />
     </>
   );

@@ -6,13 +6,18 @@ import { BatchAppointmentForm } from './BatchAppointmentForm';
 interface BatchAppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAppointmentsCreated?: () => void;
 }
 
 export const BatchAppointmentDialog: React.FC<BatchAppointmentDialogProps> = ({
   open,
-  onOpenChange
+  onOpenChange,
+  onAppointmentsCreated
 }) => {
   const handleSuccess = () => {
+    if (onAppointmentsCreated) {
+      onAppointmentsCreated();
+    }
     onOpenChange(false);
   };
   

@@ -333,6 +333,7 @@ export type Database = {
       }
       queues: {
         Row: {
+          appointment_id: string | null
           called_at: string | null
           cancelled_at: string | null
           completed_at: string | null
@@ -353,6 +354,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          appointment_id?: string | null
           called_at?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
@@ -373,6 +375,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          appointment_id?: string | null
           called_at?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
@@ -393,6 +396,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "queues_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "queues_patient_id_fkey"
             columns: ["patient_id"]
@@ -513,7 +523,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_queues_from_appointments: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      sync_appointment_queue_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

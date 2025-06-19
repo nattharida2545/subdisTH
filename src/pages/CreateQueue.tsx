@@ -1,10 +1,11 @@
+
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CreateQueueDialog from '@/components/queue/CreateQueueDialog';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { createLogger } from '@/utils/logger';
-import QueueBoardHeader from '@/components/queue/QueueBoardHeader';
+import QueuePageHeader from '@/components/queue/QueuePageHeader';
 import QueueBoardAlgorithmInfo from '@/components/queue/board/QueueBoardAlgorithmInfo';
 import HospitalFooter from '@/components/queue/HospitalFooter';
 
@@ -43,19 +44,20 @@ const CreateQueue: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header - same as QueueBoard */}
-      <QueueBoardHeader 
+    <div className="flex flex-col min-h-screen bg-pharmacy-50">
+      {/* Header - same as QueueBoard but without back button */}
+      <QueuePageHeader 
         currentTime={currentTime}
         soundEnabled={soundEnabled}
         setSoundEnabled={setSoundEnabled}
+        title="ระบบแสดงคิวห้องยา"
       />
       
       {/* Algorithm Info Bar - using similar component */}
       <QueueBoardAlgorithmInfo algorithmName="สร้างคิวใหม่" />
       
       {/* Main Content Area */}
-      <main className="container mx-auto p-6 flex-1">
+      <main className="flex-1 p-6">
         <div className="grid grid-cols-1 gap-6">
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">สร้างคิวใหม่</h1>
