@@ -6,11 +6,11 @@ import { Plus } from 'lucide-react';
 import QueueTypeItem from './QueueTypeItem';
 import QueueTypeDisplay from './QueueTypeDisplay';
 import QueueTypeEditForm from './QueueTypeEditForm';
+import QueueTypeDialog from './QueueTypeDialog';
 import { QueueType } from '@/hooks/useQueueTypes';
 import { FormatOption } from './schemas';
 import { toast } from 'sonner';
 import { useQueueTypesData } from '@/hooks/useQueueTypesData';
-import { v4 as uuidv4 } from 'uuid';
 
 interface QueueTypesListProps {
   queueTypes: QueueType[];
@@ -26,7 +26,7 @@ interface QueueTypesListProps {
 }
 
 const QueueTypesList: React.FC<QueueTypesListProps> = ({
-  queueTypes,
+  queueTypes: formQueueTypes,
   editingQueueType,
   formatOptions,
   onAddQueueType,
@@ -38,23 +38,21 @@ const QueueTypesList: React.FC<QueueTypesListProps> = ({
   onQueueTypeChange,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { saveQueueType, deleteQueueType } = useQueueTypesData();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedQueueType, setSelectedQueueType] = useState<QueueType | null>(null);
+  const { queueTypes: dbQueueTypes, saveQueueType, deleteQueueType, fetchQueueTypes } = useQueueTypesData();
+  
+  // Use database queue types as the primary source
+  const queueTypes = dbQueueTypes.length > 0 ? dbQueueTypes : formQueueTypes;
   
   const handleSaveQueueType = async (index: number) => {
     try {
       setIsProcessing(true);
       const queueType = queueTypes[index];
       
-      // Ensure it has a valid UUID
-      if (!queueType.id || queueType.id === 'NEW') {
-        queueType.id = uuidv4();
-      }
-      
-      // Save to Supabase
       const success = await saveQueueType(queueType);
       
       if (success) {
-        // Call the original save function to update the UI
         onSaveQueueType(index);
         toast.success(`บันทึกประเภทคิว ${queueType.name} เรียบร้อยแล้ว`);
       }
@@ -73,16 +71,13 @@ const QueueTypesList: React.FC<QueueTypesListProps> = ({
       if (queueType.id && queueType.id !== 'NEW') {
         setIsProcessing(true);
         
-        // Delete from Supabase
         const success = await deleteQueueType(queueType.id);
         
         if (success) {
-          // Call the original remove function to update the UI
           onRemoveQueueType(index);
           toast.success(`ลบประเภทคิว ${queueType.name} เรียบร้อยแล้ว`);
         }
       } else {
-        // If it's a new queue type that hasn't been saved yet
         onRemoveQueueType(index);
       }
     } catch (error) {
@@ -97,74 +92,109 @@ const QueueTypesList: React.FC<QueueTypesListProps> = ({
     try {
       const originalQueueType = queueTypes[index];
       
-      // Create a duplicate in the UI first
-      onDuplicateQueueType(index);
-      
-      // Get the duplicated queue type (the last one in the array)
-      const duplicatedIndex = queueTypes.length;
       const duplicatedQueueType = {
         ...originalQueueType,
-        id: uuidv4(), // Generate a new ID
+        id: crypto.randomUUID(),
         code: `${originalQueueType.code}_COPY`,
         name: `${originalQueueType.name} (สำเนา)`
       };
       
-      // Save to Supabase
-      await saveQueueType(duplicatedQueueType);
+      const success = await saveQueueType(duplicatedQueueType);
       
-      toast.success(`คัดลอกประเภทคิว ${originalQueueType.name} เรียบร้อยแล้ว`);
+      if (success) {
+        await fetchQueueTypes();
+        toast.success(`คัดลอกประเภทคิว ${originalQueueType.name} เรียบร้อยแล้ว`);
+      }
     } catch (error) {
       console.error("Error duplicating queue type:", error);
       toast.error("ไม่สามารถคัดลอกประเภทคิวได้");
     }
   };
 
+  const handleAddNewQueueType = () => {
+    setSelectedQueueType(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditQueueType = (queueType: QueueType) => {
+    setSelectedQueueType(queueType);
+    setDialogOpen(true);
+  };
+
+  const handleDialogSave = async (queueType: QueueType) => {
+    try {
+      setIsProcessing(true);
+      const success = await saveQueueType(queueType);
+      
+      if (success) {
+        await fetchQueueTypes();
+        toast.success(`บันทึกประเภทคิว ${queueType.name} เรียบร้อยแล้ว`);
+        setDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error saving queue type:", error);
+      toast.error("ไม่สามารถบันทึกประเภทคิวได้");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>ประเภทคิว</CardTitle>
-        <CardDescription>
-          กำหนดค่าประเภทคิวสำหรับผู้ป่วยกลุ่มต่างๆ
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-4">
-          {queueTypes.map((queueType, index) => (
-            <QueueTypeItem key={queueType.id || index}>
-              {editingQueueType === queueType.id ? (
-                <QueueTypeEditForm
-                  queueType={queueType}
-                  index={index}
-                  formatOptions={formatOptions}
-                  onQueueTypeChange={onQueueTypeChange}
-                  onSaveQueueType={() => handleSaveQueueType(index)}
-                  onCancelEdit={() => onCancelEdit(index)}
-                  isProcessing={isProcessing}
-                />
-              ) : (
-                <QueueTypeDisplay
-                  queueType={queueType}
-                  onEditQueueType={() => onEditQueueType(queueType.id)}
-                  onRemoveQueueType={() => handleRemoveQueueType(index)}
-                  onDuplicateQueueType={() => handleDuplicateQueueType(index)}
-                  isProcessing={isProcessing}
-                />
-              )}
-            </QueueTypeItem>
-          ))}
-        </div>
-        
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={onAddQueueType}
-          disabled={isProcessing}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          เพิ่มประเภทคิวใหม่
-        </Button>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>ประเภทคิว</CardTitle>
+          <CardDescription>
+            กำหนดค่าประเภทคิวสำหรับผู้ป่วยกลุ่มต่างๆ
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4">
+            {queueTypes.map((queueType, index) => (
+              <QueueTypeItem key={queueType.id || index}>
+                {editingQueueType === queueType.id ? (
+                  <QueueTypeEditForm
+                    queueType={queueType}
+                    index={index}
+                    formatOptions={formatOptions}
+                    onQueueTypeChange={onQueueTypeChange}
+                    onSaveQueueType={() => handleSaveQueueType(index)}
+                    onCancelEdit={() => onCancelEdit(index)}
+                    isProcessing={isProcessing}
+                  />
+                ) : (
+                  <QueueTypeDisplay
+                    queueType={queueType}
+                    onEditQueueType={() => handleEditQueueType(queueType)}
+                    onRemoveQueueType={() => handleRemoveQueueType(index)}
+                    onDuplicateQueueType={() => handleDuplicateQueueType(index)}
+                    isProcessing={isProcessing}
+                  />
+                )}
+              </QueueTypeItem>
+            ))}
+          </div>
+          
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={handleAddNewQueueType}
+            disabled={isProcessing}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            เพิ่มประเภทคิวใหม่
+          </Button>
+        </CardContent>
+      </Card>
+
+      <QueueTypeDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        queueType={selectedQueueType}
+        formatOptions={formatOptions}
+        onSave={handleDialogSave}
+      />
+    </>
   );
 };
 

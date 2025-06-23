@@ -18,60 +18,55 @@ export const useQueueAlgorithm = () => {
     // Load algorithm from settings
     const fetchQueueAlgorithm = async () => {
       try {
-        const { data, error } = await supabase
+        // Try to fetch from queue category first
+        const { data: queueData, error: queueError } = await supabase
           .from('settings')
           .select('value')
           .eq('category', 'queue')
           .eq('key', 'queue_algorithm')
           .maybeSingle();
           
-        if (error) {
-          logger.error('Error fetching queue algorithm from database:', error);
-          // Fall back to localStorage
-          const savedAlgorithm = localStorage.getItem('queue_algorithm') as QueueAlgorithmType | null;
-          if (savedAlgorithm && Object.values(QueueAlgorithmType).includes(savedAlgorithm)) {
-            setQueueAlgorithm(savedAlgorithm);
-          }
-          return;
-        }
+        let algorithm: QueueAlgorithmType = QueueAlgorithmType.FIFO;
         
-        if (data?.value) {
-          let algorithm: QueueAlgorithmType;
+        if (!queueError && queueData?.value) {
+          // Handle value as string (since we now store it as string in JSONB)
+          const rawValue = queueData.value;
+          const stringValue = typeof rawValue === 'string' ? rawValue : String(rawValue);
           
-          // Handle both string and object values properly
-          if (typeof data.value === 'string') {
-            // Normalize the string to lowercase for comparison
-            const normalizedValue = data.value.toLowerCase();
-            algorithm = normalizedValue as QueueAlgorithmType;
-          } else if (typeof data.value === 'object' && data.value !== null) {
-            // If it's an object, try to extract the algorithm value
-            const valueObj = data.value as any;
-            const extractedValue = valueObj.algorithm || valueObj.value || 'fifo';
-            algorithm = extractedValue.toLowerCase() as QueueAlgorithmType;
-          } else {
-            // Fallback to FIFO if we can't determine the value
-            algorithm = QueueAlgorithmType.FIFO;
-          }
-          
-          // Validate that the algorithm is a valid enum value (case-insensitive)
+          // Validate that the algorithm is a valid enum value
           const validAlgorithms = Object.values(QueueAlgorithmType);
-          const isValid = validAlgorithms.includes(algorithm);
-          
-          if (isValid) {
-            setQueueAlgorithm(algorithm);
-            localStorage.setItem('queue_algorithm', algorithm);
-            logger.info('Successfully loaded queue algorithm:', algorithm);
+          if (validAlgorithms.includes(stringValue as QueueAlgorithmType)) {
+            algorithm = stringValue as QueueAlgorithmType;
+            logger.info('Successfully loaded queue algorithm from queue category:', algorithm);
           } else {
-            logger.warn('Invalid algorithm value from database, using default FIFO:', data.value);
-            setQueueAlgorithm(QueueAlgorithmType.FIFO);
-            localStorage.setItem('queue_algorithm', QueueAlgorithmType.FIFO);
+            logger.warn('Invalid algorithm value from queue category, using default FIFO:', stringValue);
           }
         } else {
-          // No data found, use default FIFO algorithm
-          logger.info('No queue algorithm setting found, using default FIFO');
-          setQueueAlgorithm(QueueAlgorithmType.FIFO);
-          localStorage.setItem('queue_algorithm', QueueAlgorithmType.FIFO);
+          // Fallback to general category
+          logger.info('No queue algorithm in queue category, checking general category');
+          const { data: generalData, error: generalError } = await supabase
+            .from('settings')
+            .select('value')
+            .eq('category', 'general')
+            .eq('key', 'queue_algorithm')
+            .maybeSingle();
+            
+          if (!generalError && generalData?.value) {
+            const rawValue = generalData.value;
+            const stringValue = typeof rawValue === 'string' ? rawValue : String(rawValue);
+            
+            const validAlgorithms = Object.values(QueueAlgorithmType);
+            if (validAlgorithms.includes(stringValue as QueueAlgorithmType)) {
+              algorithm = stringValue as QueueAlgorithmType;
+              logger.info('Successfully loaded queue algorithm from general category:', algorithm);
+            } else {
+              logger.warn('Invalid algorithm value from general category, using default FIFO:', stringValue);
+            }
+          }
         }
+        
+        setQueueAlgorithm(algorithm);
+        localStorage.setItem('queue_algorithm', algorithm);
       } catch (err) {
         logger.error('Error in fetchQueueAlgorithm:', err);
         // Fall back to localStorage
@@ -134,6 +129,37 @@ export const useQueueAlgorithm = () => {
     
     fetchQueueAlgorithm();
     fetchQueueTypes();
+
+    // Set up real-time subscription for settings changes
+    const settingsChannel = supabase
+      .channel('settings-changes')
+      .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'settings' },
+          (payload: any) => {
+            logger.debug('Settings change detected:', payload);
+            if (payload.new?.key === 'queue_algorithm') {
+              fetchQueueAlgorithm();
+            }
+          }
+      )
+      .subscribe();
+
+    // Set up real-time subscription for queue types changes  
+    const queueTypesChannel = supabase
+      .channel('queue-types-changes')
+      .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'queue_types' },
+          (payload: any) => {
+            logger.debug('Queue types change detected:', payload);
+            fetchQueueTypes();
+          }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(settingsChannel);
+      supabase.removeChannel(queueTypesChannel);
+    };
   }, []);
   
   // Memoize the sortQueues function to prevent infinite re-renders

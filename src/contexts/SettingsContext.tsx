@@ -38,34 +38,40 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Use our custom hooks
-  const { form, settings, loading, loadingQueueTypes, updateMultipleSettings } = useSettingsForm();
+  const settingsForm = useSettingsForm();
   const { editingQueueType, setEditingQueueType, newQueueType, setNewQueueType } = useQueueTypeState();
+  
+  // Only proceed if we have the form initialized
+  if (!settingsForm.form) {
+    return <div>Loading settings...</div>;
+  }
+  
   const { isSubmitting, setIsSubmitting, onSubmit } = useSettingsSubmission({ 
-    form, 
-    updateMultipleSettings 
+    form: settingsForm.form, 
+    updateMultipleSettings: settingsForm.updateMultipleSettings 
   });
   
   // Pass the state to the queue type actions
   const queueTypeActions = useQueueTypeActions({
-    form,
+    form: settingsForm.form,
     setEditingQueueType,
     setNewQueueType,
     newQueueType
   });
 
   const value: SettingsContextType = {
-    form,
+    form: settingsForm.form,
     isSubmitting,
     setIsSubmitting,
-    settings,
-    loading,
-    loadingQueueTypes,
+    settings: settingsForm.settings,
+    loading: settingsForm.loading,
+    loadingQueueTypes: settingsForm.loadingQueueTypes,
     editingQueueType,
     setEditingQueueType,
     newQueueType,
     setNewQueueType,
     onSubmit,
-    updateMultipleSettings,
+    updateMultipleSettings: settingsForm.updateMultipleSettings,
     ...queueTypeActions
   };
 

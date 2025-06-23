@@ -9,7 +9,7 @@ interface SidebarHeaderProps {
 
 const SidebarHeader: React.FC<SidebarHeaderProps> = ({ closeSidebar }) => {
   return (
-    <div className="h-16 flex items-center px-6 border-b border-gray-200">
+    <div className="h-16 flex items-center px-6 border-b border-gray-200 flex-shrink-0">
       <h1 className="text-xl font-semibold tracking-tight">SubdisTH-Que</h1>
       <Button
         variant="ghost"

@@ -20,6 +20,7 @@ export const useFetchSettings = (category: string = 'general') => {
         .eq('category', category);
 
       if (error) {
+        console.error(`Error fetching settings for ${category}:`, error);
         throw error;
       }
 

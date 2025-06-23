@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { BarChart, Settings, TestTube } from 'lucide-react';
-import SidebarNavLink from './SidebarNavLink';
+import { Settings, BarChart3 } from 'lucide-react';
 import SidebarSection from './SidebarSection';
+import SidebarNavLink from './SidebarNavLink';
 
 interface SystemLinksProps {
   isActiveRoute: (path: string) => boolean;
@@ -17,29 +17,20 @@ const SystemLinks: React.FC<SystemLinksProps> = ({
     <SidebarSection title="ระบบ">
       <SidebarNavLink
         to="/analytics"
-        icon={BarChart}
+        icon={BarChart3}
         isActive={isActiveRoute}
         onClick={closeSidebar}
       >
-        รายงาน
+        รายงานและสถิติ
       </SidebarNavLink>
-
-      {/* <SidebarNavLink
-        to="/test-dashboard"
-        icon={TestTube}
-        isActive={isActiveRoute}
-        onClick={closeSidebar}
-      >
-        แดชบอร์ดทดสอบ
-      </SidebarNavLink> */}
-
+      
       <SidebarNavLink
         to="/settings"
         icon={Settings}
         isActive={isActiveRoute}
         onClick={closeSidebar}
       >
-        ตั้งค่า
+        การตั้งค่าระบบ
       </SidebarNavLink>
     </SidebarSection>
   );

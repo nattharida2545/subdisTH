@@ -101,11 +101,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Use message from request or generate from template
     let finalMessage = message;
     if (!finalMessage && settings.message_template) {
-      // Find service point name (placeholder for now)
-      const servicePointName = 'ช่องบริการ';
-      finalMessage = settings.message_template
-        .replace('{queueNumber}', queueNumber)
-        .replace('{servicePoint}', servicePointName);
+      // Simply replace {queueNumber} with the formatted queue number
+      finalMessage = settings.message_template.replace('{queueNumber}', queueNumber);
     }
 
     if (!finalMessage) {

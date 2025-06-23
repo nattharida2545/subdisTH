@@ -4,12 +4,12 @@ import { toast } from 'sonner';
 import { createLogger } from '@/utils/logger';
 import { checkSmsEnabled, getMessageTemplate } from '@/utils/sms/smsSettings';
 import { sendSmsToPatient } from '@/utils/sms/smsService';
-import { getNextQueuesPerServicePoint } from '@/utils/sms/queueFetching';
+import { getNext3WaitingQueues, getNextQueuesPerServicePoint } from '@/utils/sms/queueFetching';
 
 const logger = createLogger('useSmsNotifications');
 
 export const useSmsNotifications = () => {
-  // Send SMS notifications to next 3 queues for all service points
+  // Send SMS notifications to next 3 queues globally
   const sendSmsToNextQueues = useCallback(async (): Promise<void> => {
     try {
       // Check if SMS is enabled
@@ -19,30 +19,24 @@ export const useSmsNotifications = () => {
         return;
       }
 
-      logger.info('Starting SMS notifications for next queues...');
+      logger.info('Starting SMS notifications for next 3 queues...');
       
-      const servicePointData = await getNextQueuesPerServicePoint();
+      // Get the next 3 waiting queues globally
+      const queuePatientPairs = await getNext3WaitingQueues();
       
-      if (servicePointData.length === 0) {
-        logger.info('No service points with waiting queues found');
+      if (queuePatientPairs.length === 0) {
+        logger.info('No waiting queues found');
         return;
       }
 
       let totalSent = 0;
-      let totalQueues = 0;
+      const totalQueues = queuePatientPairs.length;
 
-      for (const { servicePoint, queues, patients } of servicePointData) {
-        logger.info(`Processing ${queues.length} queues for service point: ${servicePoint.name}`);
-        
-        for (let i = 0; i < Math.min(queues.length, patients.length, 3); i++) {
-          const queue = queues[i];
-          const patient = patients[i];
-          
-          totalQueues++;
-          const success = await sendSmsToPatient(patient, queue, servicePoint);
-          if (success) {
-            totalSent++;
-          }
+      // Send SMS to each queue-patient pair
+      for (const { queue, patient } of queuePatientPairs) {
+        const success = await sendSmsToPatient(patient, queue);
+        if (success) {
+          totalSent++;
         }
       }
 
@@ -61,6 +55,7 @@ export const useSmsNotifications = () => {
   return {
     sendSmsToNextQueues,
     getNextQueuesPerServicePoint,
+    getNext3WaitingQueues,
     sendSmsToPatient,
     checkSmsEnabled,
     getMessageTemplate

@@ -7,24 +7,33 @@ import { SettingsState, SettingItem, SettingUpdate } from './types';
 export const useUpdateSettings = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const updateSetting = async (data: SettingItem, category: string = 'general') => {
+  const updateSetting = async (data: SettingItem, category: string = 'queue') => {
     try {
       setIsUpdating(true);
       const { key, value } = data;
       
-      // Save to Supabase
-      const { error } = await (supabase as any)
+      console.log('Updating single setting:', { category, key, value, type: typeof value });
+      
+      // Prepare the value for JSONB storage - always store as string for simplicity
+      const jsonbValue = typeof value === 'string' ? value : JSON.stringify(value);
+      
+      // Save to Supabase with proper JSONB string format
+      const { error } = await supabase
         .from('settings')
         .upsert(
           { 
             category,
             key,
-            value
+            value: jsonbValue
           },
-          { onConflict: 'category,key' }
+          { 
+            onConflict: 'category,key',
+            ignoreDuplicates: false 
+          }
         );
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
@@ -44,14 +53,14 @@ export const useUpdateSettings = () => {
       return true;
     } catch (err: any) {
       console.error(`Error updating setting:`, err);
-      toast.error(`ไม่สามารถบันทึกการตั้งค่าได้`);
+      toast.error(`ไม่สามารถบันทึกการตั้งค่าได้: ${err.message || 'Unknown error'}`);
       return false;
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const updateMultipleSettings = async (updates: SettingUpdate[] | SettingsState, category: string = 'general') => {
+  const updateMultipleSettings = async (updates: SettingUpdate[] | SettingsState, category: string = 'queue') => {
     try {
       setIsUpdating(true);
       
@@ -64,18 +73,38 @@ export const useUpdateSettings = () => {
             value
           }));
 
-      // Save to Supabase
-      const { error } = await (supabase as any)
+      // Filter out any entries with null/undefined keys
+      const validUpdates = updatesArray.filter(item => item.key && item.key.trim() !== '');
+
+      if (validUpdates.length === 0) {
+        console.warn('No valid updates to process');
+        return true;
+      }
+
+      console.log('Updating multiple settings:', validUpdates);
+
+      // Prepare updates for JSONB storage - store all values as strings
+      const formattedUpdates = validUpdates.map((item: any) => ({
+        category: item.category || category,
+        key: item.key,
+        value: typeof item.value === 'string' ? item.value : JSON.stringify(item.value)
+      }));
+
+      console.log('Formatted updates for database:', formattedUpdates);
+
+      // Save to Supabase with proper JSONB string format
+      const { error } = await supabase
         .from('settings')
         .upsert(
-          updatesArray.map((item: any) => ({
-            ...item,
-            category: item.category || category
-          })),
-          { onConflict: 'category,key' }
+          formattedUpdates,
+          { 
+            onConflict: 'category,key',
+            ignoreDuplicates: false 
+          }
         );
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
@@ -83,7 +112,7 @@ export const useUpdateSettings = () => {
       const currentLocalSettings = JSON.parse(localStorage.getItem(`settings_${category}`) || '[]');
       const updatedLocalSettings = Array.isArray(currentLocalSettings) ? [...currentLocalSettings] : [];
       
-      for (const item of updatesArray) {
+      for (const item of validUpdates) {
         const key = item.key;
         const value = item.value;
         const existingIndex = updatedLocalSettings.findIndex(setting => setting.key === key);
@@ -105,7 +134,7 @@ export const useUpdateSettings = () => {
       return true;
     } catch (err: any) {
       console.error(`Error updating multiple settings:`, err);
-      toast.error(`ไม่สามารถบันทึกการตั้งค่าได้`);
+      toast.error(`ไม่สามารถบันทึกการตั้งค่าได้: ${err.message || 'Unknown error'}`);
       return false;
     } finally {
       setIsUpdating(false);

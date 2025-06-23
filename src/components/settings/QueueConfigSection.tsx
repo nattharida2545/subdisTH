@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -20,12 +19,44 @@ import {
 } from '@/components/ui/select';
 import { QueueAlgorithmType } from '@/utils/queueAlgorithms';
 import { algorithmOptions } from './schemas';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { toast } from 'sonner';
 
 interface QueueConfigSectionProps {
   form: UseFormReturn<any>;
 }
 
 const QueueConfigSection: React.FC<QueueConfigSectionProps> = ({ form }) => {
+  const { updateMultipleSettings } = useSettingsContext();
+
+  const handleAlgorithmChange = async (value: string) => {
+    try {
+      form.setValue('queue_algorithm', value);
+      
+      console.log('Saving algorithm:', value);
+      
+      // Save algorithm to Supabase immediately with correct format and category
+      const success = await updateMultipleSettings({
+        queue_algorithm: value
+      });
+      
+      if (success) {
+        // Save to localStorage for immediate use
+        localStorage.setItem('queue_algorithm', value);
+        toast.success('บันทึกอัลกอริทึมคิวเรียบร้อยแล้ว');
+      } else {
+        toast.error('ไม่สามารถบันทึกอัลกอริทึมคิวได้');
+        // Revert form value on error
+        form.setValue('queue_algorithm', form.getValues('queue_algorithm'));
+      }
+    } catch (error) {
+      console.error('Error saving queue algorithm:', error);
+      toast.error('เกิดข้อผิดพลาดในการบันทึกอัลกอริทึมคิว');
+      // Revert form value on error
+      form.setValue('queue_algorithm', form.getValues('queue_algorithm'));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -76,12 +107,8 @@ const QueueConfigSection: React.FC<QueueConfigSectionProps> = ({ form }) => {
             <FormItem>
               <FormLabel>อัลกอริทึมการเรียกคิวหลัก</FormLabel>
               <Select 
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  // Save algorithm selection to localStorage for use across app
-                  localStorage.setItem('queue_algorithm', value);
-                }} 
-                defaultValue={field.value}
+                onValueChange={handleAlgorithmChange}
+                value={field.value}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -100,7 +127,7 @@ const QueueConfigSection: React.FC<QueueConfigSectionProps> = ({ form }) => {
                 </SelectContent>
               </Select>
               <FormDescription>
-                อัลกอริทึมการเรียกคิวหลักที่ใช้ในการเรียกคิวรวม กรณีที่มีคิวหลายประเภท
+                อัลกอริทึมการเรียกคิวหลักที่ใช้ในการเรียงลำดับคิว กรณีที่มีคิวหลายประเภท (บันทึกโดยอัตโนมัติ)
               </FormDescription>
               <FormMessage />
             </FormItem>

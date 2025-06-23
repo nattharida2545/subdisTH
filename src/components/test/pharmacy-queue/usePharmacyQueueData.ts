@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { useQueues } from '@/hooks/useQueues';
 import { usePatients } from '@/hooks/usePatients';
@@ -31,27 +32,52 @@ export const usePharmacyQueueData = ({ servicePointId, refreshTrigger = 0 }: Use
   const { patients = [] } = usePatients();
   const { servicePoints = [] } = useServicePoints();
 
-  // More inclusive filtering - show queues for the specific service point OR unassigned queues
+  // More flexible filtering for pharmacy interface
   const servicePointQueues = Array.isArray(queues) ? queues.filter(queue => {
-    // Check if queue belongs to this service point OR is unassigned (null service_point_id)
+    // If "ALL" is selected (empty servicePointId), show all queues
+    if (!servicePointId) {
+      // Include all relevant statuses for pharmacy interface
+      const isRelevantStatus = ['WAITING', 'ACTIVE', 'COMPLETED', 'SKIPPED'].includes(queue.status);
+      
+      // More flexible date filtering - include last 3 days
+      const today = new Date();
+      const threeDaysAgo = new Date(today);
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+      
+      const queueDate = new Date(queue.queue_date + 'T00:00:00');
+      const isRecentQueue = queueDate >= threeDaysAgo;
+      
+      console.log('Pharmacy Queue filtering (ALL):', {
+        queueId: queue.id,
+        queueNumber: queue.number,
+        status: queue.status,
+        isRelevantStatus,
+        queueDate: queue.queue_date,
+        todayDate: today.toISOString().slice(0, 10),
+        threeDaysAgoDate: threeDaysAgo.toISOString().slice(0, 10),
+        isRecentQueue,
+        willInclude: isRelevantStatus && isRecentQueue
+      });
+      
+      return isRelevantStatus && isRecentQueue;
+    }
+
+    // For specific service point selection
     const isServicePointMatch = queue.service_point_id === servicePointId || 
                                (!queue.service_point_id && servicePointId);
     
     // Include all relevant statuses for pharmacy interface
     const isRelevantStatus = ['WAITING', 'ACTIVE', 'COMPLETED', 'SKIPPED'].includes(queue.status);
     
-    // More flexible date filtering - include today and recent dates
+    // More flexible date filtering - include last 3 days
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     
-    const queueDate = queue.queue_date;
-    const todayStr = today.toISOString().slice(0, 10);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+    const queueDate = new Date(queue.queue_date + 'T00:00:00');
+    const isRecentQueue = queueDate >= threeDaysAgo;
     
-    const isRecentQueue = queueDate === todayStr || queueDate === yesterdayStr;
-    
-    console.log('Pharmacy Queue filtering:', {
+    console.log('Pharmacy Queue filtering (specific):', {
       queueId: queue.id,
       queueNumber: queue.number,
       queueServicePointId: queue.service_point_id,
@@ -60,8 +86,8 @@ export const usePharmacyQueueData = ({ servicePointId, refreshTrigger = 0 }: Use
       status: queue.status,
       isRelevantStatus,
       queueDate: queue.queue_date,
-      todayDate: todayStr,
-      yesterdayDate: yesterdayStr,
+      todayDate: today.toISOString().slice(0, 10),
+      threeDaysAgoDate: threeDaysAgo.toISOString().slice(0, 10),
       isRecentQueue,
       willInclude: isServicePointMatch && isRelevantStatus && isRecentQueue
     });
@@ -71,7 +97,7 @@ export const usePharmacyQueueData = ({ servicePointId, refreshTrigger = 0 }: Use
 
   console.log('Filtered pharmacy servicePointQueues:', servicePointQueues.length, servicePointQueues);
 
-  const selectedServicePoint = servicePoints.find(sp => sp.id === servicePointId) || null;
+  const selectedServicePoint = servicePointId ? servicePoints.find(sp => sp.id === servicePointId) || null : null;
 
   // Group queues by status for the pharmacy interface
   const queuesByStatus = {
@@ -142,7 +168,7 @@ export const usePharmacyQueueData = ({ servicePointId, refreshTrigger = 0 }: Use
 
   // Simple manual refresh function
   const handleManualRefresh = useCallback(async () => {
-    logger.debug(`Manual refresh requested for service point ${selectedServicePoint?.code}`);
+    logger.debug(`Manual refresh requested for service point ${selectedServicePoint?.code || 'ALL'}`);
     try {
       await fetchQueues(true);
       toast.success('รีเฟรชข้อมูลเรียบร้อยแล้ว');

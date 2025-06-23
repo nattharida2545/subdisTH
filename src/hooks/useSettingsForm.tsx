@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,79 +40,110 @@ const defaultValues: SettingsFormValues = {
 
 export const useSettingsForm = () => {
   const [loading, setLoading] = useState(true);
-  const { settings, updateSettings } = useSettings('general'); // Pass 'general' as the default category
-  const { queueTypes, loading: loadingQueueTypes } = useQueueTypesData();
-  // Add a state to track if queue types are initialized
   const [queueTypesInitialized, setQueueTypesInitialized] = useState(false);
+  
+  // Initialize all settings hooks at the component level
+  const generalSettingsHook = useSettings('general');
+  const queueSettingsHook = useSettings('queue');
+  const notificationSettingsHook = useSettings('notification');
+  
+  const { queueTypes, loading: loadingQueueTypes } = useQueueTypesData();
 
-  // Create form with default values
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(queueSettingsSchema),
     defaultValues,
   });
 
-  // Update form values when settings load
   useEffect(() => {
-    if (settings) {
+    // Load settings from multiple categories
+    const { settings: generalSettings } = generalSettingsHook;
+    const { settings: queueSettings } = queueSettingsHook;
+    const { settings: notificationSettings } = notificationSettingsHook;
+
+    if (generalSettings || queueSettings || notificationSettings) {
+      console.log('Loading settings:', { generalSettings, queueSettings, notificationSettings });
+      
       let mergedValues = { ...defaultValues };
       
-      // Check if settings is an array (iterable) before trying to loop through it
-      if (Array.isArray(settings)) {
-        // Process each setting based on its key
-        for (const setting of settings) {
+      // Process general settings
+      if (Array.isArray(generalSettings)) {
+        for (const setting of generalSettings) {
           try {
-            if (setting.key === 'queue_algorithm') {
-              // Handle queue algorithm setting
-              const algorithm = setting.value as unknown as string;
-              if (algorithm && Object.values(QueueAlgorithmType).includes(algorithm as QueueAlgorithmType)) {
-                mergedValues.queue_algorithm = algorithm as QueueAlgorithmType;
-              }
-            } else if (setting.key === 'queue_types') {
-              // Handle queue types if they're in settings
-              // This is just for backward compatibility
-            } else if (setting.key in defaultValues) {
-              // Handle other recognized settings
+            if (setting.key in defaultValues) {
               mergedValues = {
                 ...mergedValues,
                 [setting.key]: setting.value,
               };
             }
           } catch (error) {
-            console.error(`Error processing setting ${setting.key}:`, error);
+            console.error(`Error processing general setting ${setting.key}:`, error);
           }
         }
-      } else if (typeof settings === 'object' && settings !== null) {
-        // If settings is an object (not array), handle it differently
-        // Convert object format to merged values directly
-        Object.entries(settings).forEach(([key, value]) => {
-          if (key === 'queue_algorithm') {
-            const algorithm = value as string;
-            if (algorithm && Object.values(QueueAlgorithmType).includes(algorithm as QueueAlgorithmType)) {
-              mergedValues.queue_algorithm = algorithm as QueueAlgorithmType;
-            }
-          } else if (key === 'queue_types') {
-            // Skip queue_types as they're handled separately
-          } else if (key in defaultValues) {
-            mergedValues = {
-              ...mergedValues,
-              [key]: value,
-            };
-          }
-        });
-      } else {
-        console.warn('Settings is not in expected format:', settings);
       }
       
-      // Reset form with merged values
+      // Process queue settings (including queue_algorithm)
+      if (Array.isArray(queueSettings)) {
+        for (const setting of queueSettings) {
+          try {
+            if (setting.key === 'queue_algorithm') {
+              const algorithm = setting.value as unknown as string;
+              console.log('Loading queue algorithm from queue settings:', algorithm);
+              if (algorithm && Object.values(QueueAlgorithmType).includes(algorithm as QueueAlgorithmType)) {
+                mergedValues.queue_algorithm = algorithm as QueueAlgorithmType;
+                console.log('Set queue algorithm to:', algorithm);
+              }
+            } else if (setting.key in defaultValues) {
+              // Handle other queue settings like queue_start_number, queue_reset_daily, etc.
+              let value = setting.value;
+              
+              // Convert string values to appropriate types
+              if (setting.key === 'queue_start_number') {
+                value = parseInt(value as string) || 1;
+              } else if (setting.key === 'queue_reset_daily' || setting.key === 'enable_wait_time_prediction' || setting.key === 'queue_voice_enabled') {
+                value = value === 'true' || value === true;
+              }
+              
+              mergedValues = {
+                ...mergedValues,
+                [setting.key]: value,
+              };
+            }
+          } catch (error) {
+            console.error(`Error processing queue setting ${setting.key}:`, error);
+          }
+        }
+      }
+      
+      // Process notification settings
+      if (Array.isArray(notificationSettings)) {
+        for (const setting of notificationSettings) {
+          try {
+            if (setting.key in defaultValues) {
+              // Convert string values to boolean for notification settings
+              let value = setting.value;
+              if (typeof value === 'string') {
+                value = value === 'true';
+              }
+              
+              mergedValues = {
+                ...mergedValues,
+                [setting.key]: value,
+              };
+            }
+          } catch (error) {
+            console.error(`Error processing notification setting ${setting.key}:`, error);
+          }
+        }
+      }
+      
+      console.log('Final merged values:', mergedValues);
       form.reset(mergedValues);
       setLoading(false);
     }
-  }, [settings, form]);
+  }, [generalSettingsHook.settings, queueSettingsHook.settings, notificationSettingsHook.settings, form]);
   
-  // Handle queue types from the database
   useEffect(() => {
     if (!loadingQueueTypes && queueTypes && queueTypes.length > 0) {
-      // Convert QueueType[] to the format expected by the form
       const convertedQueueTypes = queueTypes.map(qt => ({
         id: qt.id,
         code: qt.code,
@@ -129,24 +161,29 @@ export const useSettingsForm = () => {
     }
   }, [loadingQueueTypes, queueTypes, form]);
 
-  // Function to update multiple settings at once
-  const updateMultipleSettings = async (data: any, category: string = 'general') => {
+  const updateMultipleSettings = async (data: any, category: string = 'queue') => {
     try {
-      const updates = [];
-      for (const [key, value] of Object.entries(data)) {
-        if (key === 'queue_types') continue; // Skip queue types as they are handled separately
-        
-        updates.push({
-          category,
-          key,
-          value,
-        });
+      console.log('updateMultipleSettings called with:', { data, category });
+      
+      const settingsArray = Object.entries(data).map(([key, value]) => ({
+        category,
+        key,
+        value,
+      }));
+      
+      console.log('Converted to settings array:', settingsArray);
+      
+      // Use the appropriate settings hook based on category
+      let success = false;
+      if (category === 'general') {
+        success = await generalSettingsHook.updateMultipleSettings(settingsArray, category);
+      } else if (category === 'notification') {
+        success = await notificationSettingsHook.updateMultipleSettings(settingsArray, category);
+      } else {
+        success = await queueSettingsHook.updateMultipleSettings(settingsArray, category);
       }
       
-      if (updates.length > 0) {
-        await updateSettings(updates, category); // Pass the category parameter here
-      }
-      return true;
+      return success;
     } catch (error) {
       console.error('Error updating settings:', error);
       return false;

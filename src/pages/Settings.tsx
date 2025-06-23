@@ -7,7 +7,14 @@ import SettingsForm from '@/components/settings/SettingsForm';
 import { SettingsProvider, useSettingsContext } from '@/contexts/SettingsContext';
 
 const SettingsContent: React.FC = () => {
-  const { loading, loadingQueueTypes } = useSettingsContext();
+  const context = useSettingsContext();
+  
+  // Add null check for context
+  if (!context) {
+    return <SettingsLoading />;
+  }
+  
+  const { loading, loadingQueueTypes } = context;
 
   if (loading || loadingQueueTypes) {
     return <SettingsLoading />;

@@ -27,6 +27,33 @@ interface SidebarItemProps {
   className?: string;
 }
 
+// Create SidebarProvider context
+const SidebarContext = React.createContext<{
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}>({
+  isOpen: true,
+  setIsOpen: () => {},
+});
+
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isOpen, setIsOpen] = React.useState(true);
+
+  return (
+    <SidebarContext.Provider value={{ isOpen, setIsOpen }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
+
+export const useSidebar = () => {
+  const context = React.useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   // Use our custom theme hook if needed
   const { theme } = useTheme();

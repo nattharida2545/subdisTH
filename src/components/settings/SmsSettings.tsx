@@ -25,7 +25,7 @@ const SmsSettings: React.FC = () => {
     sender_name: 'SubdisTH',
     message_template: 'ท่านกำลังจะได้รับบริการในคิวถัดไป คิวหมายเลข {queueNumber}',
     appointment_reminder_template: 'เตือนความจำ: คุณ {patientName} มีนัดหมาย {purpose} วันที่ {appointmentDate} เวลา {appointmentTime} น. กรุณามาตรงเวลาค่ะ',
-    appointment_reminders_enabled: false
+    appointment_reminders_enabled: true
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -45,6 +45,7 @@ const SmsSettings: React.FC = () => {
         }
       });
       setFormData(newFormData);
+      console.log('SMS Settings loaded:', newFormData);
     }
   }, [settings]);
 
@@ -65,9 +66,11 @@ const SmsSettings: React.FC = () => {
         appointment_reminders_enabled: formData.appointment_reminders_enabled.toString()
       };
 
+      console.log('Saving SMS settings:', updates);
       await updateMultipleSettings(updates, 'sms');
-      toast.success('บันทึกการตั้งค่า SMS เรียบร้อยแล้ว');
+      toast.success('บันทึกการตั้งค่า SMS เรียบร้อยแล้ว (รวมถึงการแจ้งเตือนนัดหมายอัตโนมัติ)');
     } catch (error) {
+      console.error('Error saving SMS settings:', error);
       toast.error('เกิดข้อผิดพลาดในการบันทึกการตั้งค่า');
     } finally {
       setIsSaving(false);
@@ -83,6 +86,9 @@ const SmsSettings: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>การตั้งค่า SMS</CardTitle>
+          <p className="text-sm text-gray-600">
+            ระบบจะส่ง SMS แจ้งเตือนนัดหมายอัตโนมัติ 2 ครั้งต่อวัน เวลา 11:00 น. และ 17:00 น.
+          </p>
         </CardHeader>
         <CardContent className="space-y-6">
           <SmsFormFields 

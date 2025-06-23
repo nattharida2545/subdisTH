@@ -26,7 +26,6 @@ export const fetchServicePointQueueTypes = async (servicePointId: string): Promi
   return data || [];
 };
 
-// New function to fetch ALL mappings across all service points
 export const fetchAllServicePointQueueTypes = async (): Promise<ServicePointQueueType[]> => {
   logger.debug('Fetching all service point queue type mappings');
 
@@ -53,29 +52,39 @@ export const createServicePointQueueTypeMapping = async (
 ): Promise<ServicePointQueueType> => {
   logger.debug(`Adding mapping: servicePointId=${servicePointId}, queueTypeId=${queueTypeId}`);
 
-  const { data, error } = await supabase
-    .from('service_point_queue_types')
-    .insert({
-      service_point_id: servicePointId,
-      queue_type_id: queueTypeId
-    })
-    .select(`
-      *,
-      queue_type:queue_types(id, name, code),
-      service_point:service_points(id, name, code)
-    `);
+  try {
+    // Try the insert operation directly since RLS now allows public access
+    const { data, error } = await supabase
+      .from('service_point_queue_types')
+      .insert({
+        service_point_id: servicePointId,
+        queue_type_id: queueTypeId
+      })
+      .select('*')
+      .single();
 
-  if (error) {
-    logger.error('Supabase error during insert:', error);
-    throw error;
+    if (error) {
+      logger.error('Supabase error during insert:', error);
+      
+      // Provide more specific error messages
+      if (error.code === '23505') {
+        throw new Error('การเชื่อมโยงนี้มีอยู่แล้วในระบบ');
+      } else {
+        throw error;
+      }
+    }
+
+    logger.debug('Successfully added mapping:', data);
+    
+    return {
+      ...data,
+      queue_type: null,
+      service_point: null
+    } as ServicePointQueueType;
+  } catch (err) {
+    logger.error('Error in createServicePointQueueTypeMapping:', err);
+    throw err;
   }
-
-  if (!data || data.length === 0) {
-    throw new Error('No data returned after adding mapping');
-  }
-
-  logger.debug('Successfully added mapping:', data[0]);
-  return data[0];
 };
 
 export const deleteServicePointQueueTypeMapping = async (id: string): Promise<boolean> => {

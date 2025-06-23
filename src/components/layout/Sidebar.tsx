@@ -55,13 +55,22 @@ export function Sidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-64 transform transition-transform duration-200 ease-in-out bg-white border-r border-gray-200 flex flex-col",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "w-64 bg-white border-r border-gray-200 transition-all duration-200 ease-in-out",
+          // Desktop: always visible, relative positioning with full height
+          "lg:relative lg:translate-x-0 lg:h-screen",
+          // Mobile: fixed positioning with conditional visibility and full height
+          "fixed top-0 left-0 z-50 h-screen",
+          isSidebarOpen 
+            ? "translate-x-0" 
+            : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <SidebarHeader closeSidebar={closeSidebar} />
-        <SidebarContent isActiveRoute={isActiveRoute} closeSidebar={closeSidebar} />
-        <SidebarFooter />
+        {/* Sidebar content as flex column with full height */}
+        <div className="flex flex-col h-full">
+          <SidebarHeader closeSidebar={closeSidebar} />
+          <SidebarContent isActiveRoute={isActiveRoute} closeSidebar={closeSidebar} />
+          <SidebarFooter />
+        </div>
       </div>
     </>
   );

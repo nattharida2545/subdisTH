@@ -76,7 +76,7 @@ export const useQueueTypesData = () => {
   const saveQueueType = async (queueType: QueueType) => {
     try {
       // Then save to Supabase, using any to bypass type checking
-      const { error } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('queue_types')
         .upsert({
           id: queueType.id,
@@ -88,18 +88,22 @@ export const useQueueTypesData = () => {
           enabled: queueType.enabled,
           algorithm: queueType.algorithm,
           priority: queueType.priority
-        });
+        })
+        .select();
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
-      // Refresh queue types
-      fetchQueueTypes();
+      console.log('Queue type saved successfully:', data);
+
+      // Refresh queue types after successful save
+      await fetchQueueTypes();
       return true;
     } catch (err: any) {
       console.error('Error saving queue type:', err);
-      toast.error(`ไม่สามารถบันทึกประเภทคิว ${queueType.name} ได้`);
+      toast.error(`ไม่สามารถบันทึกประเภทคิว ${queueType.name} ได้: ${err.message || 'Unknown error'}`);
       return false;
     }
   };
@@ -112,15 +116,18 @@ export const useQueueTypesData = () => {
         .eq('id', id);
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
-      // Refresh queue types
-      fetchQueueTypes();
+      console.log('Queue type deleted successfully');
+
+      // Refresh queue types after successful delete
+      await fetchQueueTypes();
       return true;
     } catch (err: any) {
       console.error('Error deleting queue type:', err);
-      toast.error('ไม่สามารถลบประเภทคิวได้');
+      toast.error(`ไม่สามารถลบประเภทคิวได้: ${err.message || 'Unknown error'}`);
       return false;
     }
   };
