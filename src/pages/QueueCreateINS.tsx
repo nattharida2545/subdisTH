@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import {
   Printer,
   Volume2,
   VolumeX,
+  ScanLine,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QueueIns } from "@/integrations/supabase/schema";
@@ -39,6 +41,7 @@ const QueueCreateINS = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [waitTiemQueueNext, setWaitTiemQueueNext] = useState<number>(0);
+  const [isReadingCard, setIsReadingCard] = useState(false);
 
   // Update the current time every second
   useEffect(() => {
@@ -56,6 +59,17 @@ const QueueCreateINS = () => {
       setSoundEnabled(savedSoundEnabled === "true");
     }
   }, []);
+
+  // Auto-read Thai ID card every 5 seconds until idCard is filled
+  useEffect(() => {
+    if (formData.idCard) return;
+    const interval = setInterval(() => {
+      if (!isReadingCard && !formData.idCard) {
+        readThaiIDCard();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [formData.idCard, isReadingCard]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -129,6 +143,89 @@ const QueueCreateINS = () => {
         ...prev,
         [field]: "",
       }));
+    }
+  };
+
+  const readThaiIDCard = async () => {
+    setIsReadingCard(true);
+    try {
+      // Use JSONP via script tag to bypass CORS
+      const callbackName = `thaiIDCallback_${Date.now()}`;
+      const data: any = await new Promise((resolve, reject) => {
+        const cleanup = () => {
+          delete (window as any)[callbackName];
+          const s = document.getElementById(callbackName);
+          if (s) s.remove();
+        };
+
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("หมดเวลาในการอ่านบัตร กรุณาตรวจสอบว่าเสียบเครื่องอ่านบัตรและใส่บัตรแล้ว"));
+        }, 10000);
+
+        (window as any)[callbackName] = (payload: any) => {
+          clearTimeout(timeout);
+          cleanup();
+          resolve(payload);
+        };
+
+        const script = document.createElement('script');
+        script.id = callbackName;
+        script.src = `https://localhost:8182/thaiid/read.jsonp?callback=${callbackName}&section1=true&section2a=true&section2c=true`;
+        script.onerror = () => {
+          clearTimeout(timeout);
+          cleanup();
+          reject(new Error("ไม่สามารถเชื่อมต่อกับเครื่องอ่านบัตรได้ กรุณาตรวจสอบว่าติดตั้งโปรแกรมและเปิดใช้งานแล้ว"));
+        };
+        document.body.appendChild(script);
+      });
+
+      // Check if data is valid
+      if (!data) {
+        throw new Error(data?.message || "ไม่สามารถอ่านข้อมูลจากบัตรได้");
+      }
+      // Parse and fill form data
+      const cardData = data;
+      console.log("cardDAta:",cardData)
+      // Build address string
+      let addressParts = [];
+      if (cardData.HomeNo) addressParts.push(cardData.HomeNo);
+      if (cardData.Soi) addressParts.push(`ซอย ${cardData.Soi}`);
+      if (cardData.Trok) addressParts.push(`ตรอก ${cardData.Trok}`);
+      if (cardData.Road) addressParts.push(`ถนน ${cardData.Road}`);
+      
+      const houseNumber = addressParts.join(" ");
+      
+      // Update form data
+      setFormData({
+        idCard: formatIdCard(cardData.CitizenNo || ""),
+        full_name: `${cardData.FirstNameTh || ""} ${cardData.LastNameTh || ""}`.trim(),
+        houseNumber: houseNumber,
+        moo: (cardData.Moo).replace("หมู่ที่ ", "") || "",
+        phoneNumber: formData.phoneNumber, // Keep existing phone number
+      });
+
+      // Clear any existing errors
+      setErrors({});
+
+      toast.success("อ่านข้อมูลจากบัตรประชาชนสำเร็จ");
+    } catch (error: any) {
+      console.error("Error reading Thai ID card:", error);
+      
+      // Handle axios errors
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          toast.error("หมดเวลาในการอ่านบัตร กรุณาตรวจสอบว่าเสียบเครื่องอ่านบัตรและใส่บัตรแล้ว");
+        } else if (error.code === 'ERR_NETWORK' || !error.response) {
+          toast.error("ไม่สามารถเชื่อมต่อกับเครื่องอ่านบัตรได้ กรุณาตรวจสอบว่าติดตั้งโปรแกรมและเปิดใช้งานแล้ว");
+        } else {
+          toast.error(error.response?.data?.message || "เกิดข้อผิดพลาดในการอ่านบัตรประชาชน");
+        }
+      } else {
+        toast.error(error.message || "เกิดข้อผิดพลาดในการอ่านบัตรประชาชน");
+      }
+    } finally {
+      setIsReadingCard(false);
     }
   };
 
@@ -447,6 +544,28 @@ const QueueCreateINS = () => {
 
           <CardContent className="px-6 pb-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* ปุ่มอ่านบัตรประชาชน */}
+              {/* <div className="space-y-2">
+                <Button
+                  type="button"
+                  onClick={readThaiIDCard}
+                  disabled={isReadingCard}
+                  className="w-full h-12 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50"
+                >
+                  {isReadingCard ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      กำลังอ่านบัตร...
+                    </>
+                  ) : (
+                    <>
+                      <ScanLine className="w-5 h-5 mr-2" />
+                      อ่านบัตรประชาชน
+                    </>
+                  )}
+                </Button>
+              </div> */}
+
               {/* เลขบัตรประชาชน */}
               <div className="space-y-2">
                 <Label
