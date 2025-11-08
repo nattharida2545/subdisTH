@@ -81,10 +81,10 @@ const ServicePointSettings: React.FC<{ className?: string }> = ({ className }) =
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>จุดบริการ</CardTitle>
-            <CardDescription>
+            <CardTitle>จุดบริการรับยา</CardTitle>
+            {/* <CardDescription>
               จัดการจุดบริการที่จะให้บริการคิวประเภทต่าง ๆ
-            </CardDescription>
+            </CardDescription> */}
           </div>
           <Button onClick={handleAdd} disabled={isAdding}>
             <Plus className="h-4 w-4 mr-2" /> เพิ่มจุดบริการ

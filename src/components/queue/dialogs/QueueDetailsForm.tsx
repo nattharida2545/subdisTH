@@ -1,16 +1,15 @@
-
-import React, { useEffect, useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { QueueType } from '@/integrations/supabase/schema';
-import { useQueueTypesData } from '@/hooks/useQueueTypesData';
+} from "@/components/ui/select";
+import { QueueType } from "@/integrations/supabase/schema";
+import { useQueueTypesData } from "@/hooks/useQueueTypesData";
 
 interface QueueDetailsFormProps {
   queueType: QueueType;
@@ -27,7 +26,7 @@ const QueueDetailsForm: React.FC<QueueDetailsFormProps> = ({
   notes,
   setNotes,
   queueTypePurposes,
-  shouldShow
+  shouldShow,
 }) => {
   const { queueTypes, loading } = useQueueTypesData();
   const [enabledQueueTypes, setEnabledQueueTypes] = useState<any[]>([]);
@@ -35,11 +34,11 @@ const QueueDetailsForm: React.FC<QueueDetailsFormProps> = ({
   useEffect(() => {
     if (queueTypes && queueTypes.length > 0) {
       // Filter only enabled queue types
-      const enabled = queueTypes.filter(qt => qt.enabled);
+      const enabled = queueTypes.filter((qt) => qt.enabled);
       setEnabledQueueTypes(enabled);
-      
+
       // If current queueType is not in the enabled list, set to first enabled type
-      if (enabled.length > 0 && !enabled.find(qt => qt.code === queueType)) {
+      if (enabled.length > 0 && !enabled.find((qt) => qt.code === queueType)) {
         setQueueType(enabled[0].code as QueueType);
       }
     }
@@ -57,21 +56,23 @@ const QueueDetailsForm: React.FC<QueueDetailsFormProps> = ({
     );
   }
 
+  console.log("queType:", queueType);
+  console.log("queueTypes", queueTypes);
   return (
     <>
       <div className="grid gap-2">
         <Label htmlFor="queueType">ประเภทคิว</Label>
-        <Select 
-          value={queueType} 
+        <Select
+          value={queueType}
           onValueChange={(value) => setQueueType(value as QueueType)}
         >
           <SelectTrigger id="queueType">
             <SelectValue placeholder="เลือกประเภทคิว" />
           </SelectTrigger>
           <SelectContent>
-            {enabledQueueTypes.map(qt => (
+            {enabledQueueTypes.map((qt) => (
               <SelectItem key={qt.code} value={qt.code}>
-                {qt.name} - {qt.purpose || 'ไม่มีคำอธิบาย'}
+                {qt.name} - {qt.purpose || "ไม่มีคำอธิบาย"}
               </SelectItem>
             ))}
             {enabledQueueTypes.length === 0 && (
@@ -82,7 +83,7 @@ const QueueDetailsForm: React.FC<QueueDetailsFormProps> = ({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="grid gap-2">
         <Label htmlFor="notes">บันทึกเพิ่มเติม</Label>
         <Input

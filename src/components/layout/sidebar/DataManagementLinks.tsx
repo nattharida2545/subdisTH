@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { Users, Calendar, PanelsTopLeft } from 'lucide-react';
-import SidebarNavLink from './SidebarNavLink';
-import SidebarSection from './SidebarSection';
+import React from "react";
+import { Users, Calendar, PanelsTopLeft, Clock } from "lucide-react";
+import SidebarNavLink from "./SidebarNavLink";
+import SidebarSection from "./SidebarSection";
 
 interface DataManagementLinksProps {
   isActiveRoute: (path: string) => boolean;
@@ -23,7 +22,7 @@ const DataManagementLinks: React.FC<DataManagementLinksProps> = ({
       >
         ผู้ป่วย
       </SidebarNavLink>
-      
+
       <SidebarNavLink
         to="/appointments"
         icon={Calendar}
@@ -32,7 +31,7 @@ const DataManagementLinks: React.FC<DataManagementLinksProps> = ({
       >
         นัดหมาย
       </SidebarNavLink>
-      
+
       <SidebarNavLink
         to="/medications"
         icon={PanelsTopLeft}
@@ -40,6 +39,22 @@ const DataManagementLinks: React.FC<DataManagementLinksProps> = ({
         onClick={closeSidebar}
       >
         คลังยา
+      </SidebarNavLink>
+      <SidebarNavLink
+        to="/queue-history"
+        icon={Clock}
+        isActive={isActiveRoute}
+        onClick={closeSidebar}
+      >
+        ประวัติคิวรับยา
+      </SidebarNavLink>
+      <SidebarNavLink
+        to="/ins-queue-history"
+        icon={Clock}
+        isActive={isActiveRoute}
+        onClick={closeSidebar}
+      >
+        ประวัติคิวตรวจ
       </SidebarNavLink>
     </SidebarSection>
   );

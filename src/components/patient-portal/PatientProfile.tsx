@@ -1,12 +1,11 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, User } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, User } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -14,23 +13,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { Patient } from '@/integrations/supabase/schema';
-import { toast } from 'sonner';
+} from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { Patient } from "@/integrations/supabase/schema";
+import { toast } from "sonner";
 
 const profileSchema = z.object({
-  name: z.string().min(1, 'กรุณาระบุชื่อ'),
-  phone: z.string().min(1, 'กรุณาระบุหมายเลขโทรศัพท์'),
+  name: z.string().min(1, "กรุณาระบุชื่อ"),
+  phone: z.string().min(0, "กรุณาระบุหมายเลขโทรศัพท์"),
+  ID_card: z.string().min(1, "กรุณาระบุเลขบัตรประจำตัวประชาชน"),
   address: z.string().optional(),
   gender: z.string().optional(),
   birth_date: z.string().optional(),
@@ -50,12 +50,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: patient.name || '',
-      phone: patient.phone || '',
-      address: patient.address || '',
-      gender: patient.gender || '',
-      birth_date: patient.birth_date || '',
-      distance_from_hospital: patient.distance_from_hospital?.toString() || '',
+      name: patient.name || "",
+      phone: patient.phone || "",
+      ID_card: patient.ID_card || "",
+      address: patient.address || "",
+      gender: patient.gender || "",
+      birth_date: patient.birth_date || "",
+      distance_from_hospital: patient.distance_from_hospital?.toString() || "",
     },
   });
 
@@ -65,30 +66,31 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
       const updateData = {
         name: values.name,
         phone: values.phone,
+        ID_card: values.ID_card,
         address: values.address || null,
         gender: values.gender || null,
         birth_date: values.birth_date || null,
-        distance_from_hospital: values.distance_from_hospital 
-          ? parseFloat(values.distance_from_hospital) 
+        distance_from_hospital: values.distance_from_hospital
+          ? parseFloat(values.distance_from_hospital)
           : null,
       };
 
       const { error } = await supabase
-        .from('patients')
+        .from("patients")
         .update(updateData)
-        .eq('id', patient.id);
+        .eq("id", patient.id);
 
       if (error) throw error;
 
       // Update phone in localStorage if changed
-      if (values.phone !== patient.phone) {
-        localStorage.setItem('userPhone', values.phone);
+      if (values.ID_card !== patient.ID_card) {
+        localStorage.setItem("userPhone", values.ID_card);
       }
 
-      toast.success('บันทึกข้อมูลเรียบร้อยแล้ว');
+      toast.success("บันทึกข้อมูลเรียบร้อยแล้ว");
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      console.error("Error updating profile:", error);
+      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
     } finally {
       setSaving(false);
     }
@@ -101,11 +103,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/patient-portal')}
+            onClick={() => navigate("/patient-portal")}
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">แก้ไขข้อมูลส่วนตัว</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            แก้ไขข้อมูลส่วนตัว
+          </h1>
         </div>
 
         <Card>
@@ -117,7 +121,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="name"
@@ -134,12 +141,32 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
 
                 <FormField
                   control={form.control}
+                  name="ID_card"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>เลขบัตรประจำตัวประชาชน</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="เลขบัตรประจำตัวประชาชน"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>หมายเลขโทรศัพท์</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="กรุณาระบุหมายเลขโทรศัพท์" />
+                        <Input
+                          {...field}
+                          placeholder="กรุณาระบุหมายเลขโทรศัพท์"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -153,7 +180,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>เพศ</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="เลือกเพศ" />
@@ -192,7 +222,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
                     <FormItem>
                       <FormLabel>ที่อยู่</FormLabel>
                       <FormControl>
-                        <Textarea {...field} placeholder="กรุณาระบุที่อยู่" rows={3} />
+                        <Textarea
+                          {...field}
+                          placeholder="กรุณาระบุที่อยู่"
+                          rows={3}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -206,18 +240,18 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
                     <FormItem>
                       <FormLabel>ระยะทางจากโรงพยาบาล (กิโลเมตร)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.1" 
+                        <Input
+                          type="number"
+                          step="0.1"
                           min="0"
-                          {...field} 
-                          placeholder="เช่น 5.2" 
+                          {...field}
+                          placeholder="เช่น 5.2"
                         />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-sm text-gray-500 mt-1">
+                      {/* <p className="text-sm text-gray-500 mt-1">
                         ข้อมูลนี้จะใช้สำหรับคำนวณลำดับคิวในกรณีที่มีการนัดหมาย
-                      </p>
+                      </p> */}
                     </FormItem>
                   )}
                 />
@@ -226,16 +260,16 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient }) => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate('/patient-portal')}
+                    onClick={() => navigate("/patient-portal")}
                   >
                     ยกเลิก
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={saving}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    {saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+                    {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
                   </Button>
                 </div>
               </form>

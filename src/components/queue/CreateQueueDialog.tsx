@@ -1,19 +1,18 @@
-
-import * as React from 'react';
-import { 
+import * as React from "react";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import QueueCreatedDialog from './QueueCreatedDialog';
-import { createLogger } from '@/utils/logger';
-import { useCreateQueue } from './dialogs/hooks/create-queue';
-import CreateQueueDialogContent from './dialog-parts/CreateQueueDialogContent';
-import CreateQueueFooterActions from './dialog-parts/CreateQueueFooterActions';
+} from "@/components/ui/dialog";
+import QueueCreatedDialog from "./QueueCreatedDialog";
+import { createLogger } from "@/utils/logger";
+import { useCreateQueue } from "./dialogs/hooks/create-queue";
+import CreateQueueDialogContent from "./dialog-parts/CreateQueueDialogContent";
+import CreateQueueFooterActions from "./dialog-parts/CreateQueueFooterActions";
 
-const logger = createLogger('CreateQueueDialog');
+const logger = createLogger("CreateQueueDialog");
 
 interface CreateQueueDialogProps {
   open: boolean;
@@ -27,72 +26,84 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
   onCreateQueue,
 }) => {
   logger.verbose(`Rendering with open=${open}`);
-  
+
   // Use our refactored hook that combines all queue creation functionality
   const {
     // Patient search
     phoneNumber,
     setPhoneNumber,
+    idCardNumber,
+    setIdCardNumber,
+    searchType,
+    setSearchType,
     isSearching,
     matchedPatients,
-    handlePhoneSearch,
-    
+    handleSearch,
+
     // Patient selection
     patientId,
     handleSelectPatient,
-    
+
     // New patient
     showNewPatientForm,
     newPatientName,
     setNewPatientName,
     handleAddNewPatient,
-    
+
     // Queue creation
     queueType,
     setQueueType,
     notes,
     setNotes,
     queueTypePurposes,
-    
+
     // Queue dialog
     qrDialogOpen,
     setQrDialogOpen,
     createdQueueNumber,
     createdQueueType,
     createdPurpose,
-    
+
     // Final patient info
     finalPatientName,
     finalPatientPhone,
     finalPatientLineId,
-    
+
     // Actions
     handleCreateQueue,
-    resetState
+    resetState,
   } = useCreateQueue(onOpenChange, onCreateQueue);
-  
+
   // Reset state when dialog is closed
   React.useEffect(() => {
     if (!open) {
-      logger.debug('Dialog closed, resetting state');
+      logger.debug("Dialog closed, resetting state");
       resetState();
     } else {
-      logger.debug('Dialog opened');
+      logger.debug("Dialog opened");
     }
   }, [open, resetState]);
 
   // Determine if the create queue button should be disabled
-  const isCreateQueueDisabled = !patientId && !(showNewPatientForm && newPatientName);
-  
+  // Consider both phone and ID card search types
+  const isCreateQueueDisabled =
+    !patientId &&
+    !(
+      showNewPatientForm &&
+      newPatientName &&
+      ((searchType === "phone" && phoneNumber) ||
+        (searchType === "id_card" && idCardNumber))
+    );
+
   // Handle cancel button click
   const handleCancel = React.useCallback(() => {
-    logger.debug('Cancel button clicked');
+    logger.debug("Cancel button clicked");
     onOpenChange(false);
   }, [onOpenChange]);
 
   // Handle complete reset when QueueCreatedDialog closes
   const handleQueueCreatedDialogClose = React.useCallback(() => {
-    logger.debug('QueueCreatedDialog closed, performing complete reset');
+    logger.debug("QueueCreatedDialog closed, performing complete reset");
     resetState();
     // Also close the main create queue dialog to return to clean state
     onOpenChange(false);
@@ -100,8 +111,8 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
 
   return (
     <>
-      <Dialog 
-        open={open} 
+      <Dialog
+        open={open}
         onOpenChange={(newOpen) => {
           logger.debug(`Dialog onOpenChange called with: ${newOpen}`);
           onOpenChange(newOpen);
@@ -111,13 +122,17 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
           <DialogHeader>
             <DialogTitle>สร้างคิวใหม่</DialogTitle>
           </DialogHeader>
-          
-          <CreateQueueDialogContent 
+
+          <CreateQueueDialogContent
             phoneNumber={phoneNumber}
             setPhoneNumber={setPhoneNumber}
+            idCardNumber={idCardNumber}
+            setIdCardNumber={setIdCardNumber}
+            searchType={searchType}
+            setSearchType={setSearchType}
             isSearching={isSearching}
             matchedPatients={matchedPatients}
-            handlePhoneSearch={handlePhoneSearch}
+            handleSearch={handleSearch}
             patientId={patientId}
             handleSelectPatient={handleSelectPatient}
             showNewPatientForm={showNewPatientForm}
@@ -130,9 +145,9 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
             setNotes={setNotes}
             queueTypePurposes={queueTypePurposes}
           />
-          
+
           <DialogFooter>
-            <CreateQueueFooterActions 
+            <CreateQueueFooterActions
               onCancel={handleCancel}
               onCreateQueue={() => handleCreateQueue()}
               isDisabled={isCreateQueueDisabled}
@@ -140,12 +155,12 @@ const CreateQueueDialog: React.FC<CreateQueueDialogProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      <QueueCreatedDialog 
-        open={qrDialogOpen && createdQueueNumber !== null} 
+
+      <QueueCreatedDialog
+        open={qrDialogOpen && createdQueueNumber !== null}
         onOpenChange={setQrDialogOpen}
         queueNumber={createdQueueNumber || 0}
-        queueType={createdQueueType || 'GENERAL'}
+        queueType={createdQueueType || "GENERAL"}
         patientName={finalPatientName}
         patientPhone={finalPatientPhone}
         patientLineId={finalPatientLineId}

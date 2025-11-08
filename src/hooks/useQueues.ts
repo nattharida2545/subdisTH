@@ -1,16 +1,16 @@
+import { createLogger } from "@/utils/logger";
+import { useQueueCore } from "./queue/core/useQueueCore";
+import { useQueueActionHandlers } from "./queue/core/useQueueActionHandlers";
 
-import { createLogger } from '@/utils/logger';
-import { useQueueCore } from './queue/core/useQueueCore';
-import { useQueueActionHandlers } from './queue/core/useQueueActionHandlers';
-
-const logger = createLogger('useQueues');
+const logger = createLogger("useQueues");
 
 export const useQueues = () => {
-  logger.debug('Hook initialized');
-  
+  logger.debug("Hook initialized");
+
   // Use the core queue functionality
   const {
     queues,
+    allQueues,
     loading,
     error,
     fetchQueues,
@@ -18,7 +18,8 @@ export const useQueues = () => {
     updateQueueStatus,
     removeQueue,
     getQueuesByStatus,
-    updateQueueInState
+    updateQueueInState,
+    allQueuesNofilter,
   } = useQueueCore();
 
   // Use the action handlers
@@ -36,11 +37,18 @@ export const useQueues = () => {
     getNextQueueToCall,
     transferQueueToServicePoint,
     putQueueOnHold,
-    returnSkippedQueueToWaiting
-  } = useQueueActionHandlers(queues, updateQueueStatus, updateQueueInState, fetchQueues);
+    returnSkippedQueueToWaiting,
+  } = useQueueActionHandlers(
+    queues,
+    updateQueueStatus,
+    updateQueueInState,
+    fetchQueues
+  );
 
   return {
     queues,
+    allQueues,
+    allQueuesNofilter,
     loading,
     error,
     fetchQueues,
@@ -61,6 +69,6 @@ export const useQueues = () => {
     getNextQueueToCall,
     transferQueueToServicePoint,
     putQueueOnHold,
-    returnSkippedQueueToWaiting
+    returnSkippedQueueToWaiting,
   };
 };

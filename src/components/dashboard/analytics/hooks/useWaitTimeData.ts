@@ -5,7 +5,7 @@ import { th } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { TimeFrame } from './useTimeFrameState';
 
-export const useWaitTimeData = (timeFrame: TimeFrame) => {
+export const useWaitTimeData = (timeFrame: TimeFrame, refreshTrigger?: number) => {
   // Always define state hooks first
   const [waitTimeData, setWaitTimeData] = React.useState<any[]>([]);
   
@@ -100,7 +100,7 @@ export const useWaitTimeData = (timeFrame: TimeFrame) => {
     } catch (error) {
       console.error('Error in fetchWaitTimeData:', error);
     }
-  }, [timeFrame]);
+  }, [timeFrame, refreshTrigger]);
   
   // useEffect should always be at the end of the hook
   React.useEffect(() => {

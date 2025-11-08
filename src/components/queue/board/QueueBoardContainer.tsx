@@ -8,6 +8,7 @@ import QueueBoardContent from './QueueBoardContent';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { createLogger } from '@/utils/logger';
+import { isCompletedToday } from '@/utils/dateUtils';
 
 const logger = createLogger('QueueBoard');
 
@@ -43,11 +44,15 @@ const QueueBoardContainer = () => {
         setWaitingQueues(sortedWaiting.slice(0, 5));
         
         const completed = await getQueuesByStatus(QUEUE_STATUS.COMPLETED);
-        setCompletedQueues(completed.sort((a, b) => 
+        // Filter completed queues to only show today's queues
+        const todayCompleted = completed.filter(queue => 
+          isCompletedToday(queue.completed_at, queue.queue_date)
+        );
+        setCompletedQueues(todayCompleted.sort((a, b) => 
           new Date(b.completed_at || b.updated_at).getTime() - 
           new Date(a.completed_at || a.updated_at).getTime()).slice(0, 5));
           
-        logger.info(`Fetched queues - Active: ${active.length}, Waiting: ${waiting.length}, Completed: ${completed.length}`);
+        logger.info(`Fetched queues - Active: ${active.length}, Waiting: ${waiting.length}, Completed today: ${todayCompleted.length}`);
       } catch (error) {
         logger.error('Error fetching queues:', error);
         toast.error('ไม่สามารถดึงข้อมูลคิวได้');

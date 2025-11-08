@@ -55,8 +55,8 @@ const PatientQueueSelector: React.FC<PatientQueueSelectorProps> = ({
 
   // Sort queues by priority (PRIORITY first) and then by creation time
   const sortedQueues = [...queues].sort((a, b) => {
-    if (a.type === 'PRIORITY' && b.type !== 'PRIORITY') return -1;
-    if (a.type !== 'PRIORITY' && b.type === 'PRIORITY') return 1;
+    if (a.type === 'URGENT' && b.type !== 'URGENT') return -1;
+    if (a.type !== 'URGENT' && b.type === 'URGENT') return 1;
     return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
   });
 
@@ -85,7 +85,7 @@ const PatientQueueSelector: React.FC<PatientQueueSelectorProps> = ({
         {sortedQueues.map((queue, index) => {
           const patientName = getPatientName(queue.patient_id);
           const estimatedWait = getWaitTimeEstimate(index);
-          const isPriority = queue.type === 'PRIORITY';
+          const isPriority = queue.type === 'URGENT';
 
           return (
             <Card 

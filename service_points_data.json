@@ -1,0 +1,42 @@
+[
+  {
+    "id": "9bce313e-12c7-4361-8453-9eff784f9723",
+    "code": "SP01",
+    "name": "ช่อง 1",
+    "location": "Main Counter",
+    "enabled": true,
+    "created_at": "2025-05-15T03:46:46.590369+00:00",
+    "updated_at": "2025-06-04T14:45:07.435192+00:00",
+    "user_id": null
+  },
+  {
+    "id": "894d389c-d2ca-4c89-b41b-67c4bcf80ea3",
+    "code": "SP02",
+    "name": "ช่อง 2",
+    "location": "ยาผู้สูงอายุ NCD",
+    "enabled": true,
+    "created_at": "2025-05-22T16:19:32.764769+00:00",
+    "updated_at": "2025-06-05T08:59:53.244192+00:00",
+    "user_id": null
+  },
+  {
+    "id": "d5290302-f0ea-4750-8224-32de94a69d5d",
+    "code": "SP04",
+    "name": "ช่องยาด่วน",
+    "location": "",
+    "enabled": true,
+    "created_at": "2025-06-19T14:01:47.070958+00:00",
+    "updated_at": "2025-06-19T14:01:47.070958+00:00",
+    "user_id": null
+  },
+  {
+    "id": "d2c4f6e4-3c2d-41a1-a0bb-8d1bcc9b45d7",
+    "code": "SP03",
+    "name": "ช่อง 3",
+    "location": "นัดหมาย",
+    "enabled": true,
+    "created_at": "2025-05-24T14:48:30.084683+00:00",
+    "updated_at": "2025-06-26T06:50:00.430707+00:00",
+    "user_id": null
+  }
+]

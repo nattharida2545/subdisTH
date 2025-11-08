@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
-import { Search, X, GripVertical } from 'lucide-react';
-import { Patient } from '@/integrations/supabase/schema';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
+import React, { useState } from "react";
+import { Search, X, GripVertical } from "lucide-react";
+import { Patient } from "@/integrations/supabase/schema";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
 interface MultiPatientSelectorProps {
   selectedPatients: Patient[];
@@ -48,7 +47,7 @@ export const MultiPatientSelector: React.FC<MultiPatientSelectorProps> = ({
         <Label>ค้นหาและเลือกผู้ป่วย</Label>
         <div className="flex gap-2 mt-1">
           <Input
-            placeholder="ค้นหาด้วยชื่อหรือเบอร์โทรศัพท์"
+            placeholder="ค้นหาด้วยชื่อ เบอร์โทรศัพท์ เลขบัตรประชาชนผู้ป่วย..."
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
           />
@@ -93,7 +92,7 @@ export const MultiPatientSelector: React.FC<MultiPatientSelectorProps> = ({
             </span>
           )}
         </div>
-        
+
         {selectedPatients.length > 0 ? (
           <div className="border rounded-md p-2 max-h-60 overflow-y-auto">
             {selectedPatients.map((patient, index) => (

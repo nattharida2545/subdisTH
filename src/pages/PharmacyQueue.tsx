@@ -1,31 +1,30 @@
-
-import React, { useState, useCallback } from 'react';
-import { useServicePointContext } from '@/contexts/ServicePointContext';
-import { MedicationsProvider } from '@/components/medications/context/MedicationsContext';
-import PharmacyQueueHeader from '@/components/pharmacy-queue/PharmacyQueueHeader';
-import PharmacyQueueEmptyState from '@/components/pharmacy-queue/PharmacyQueueEmptyState';
-import PharmacyQueueContent from '@/components/pharmacy-queue/PharmacyQueueContent';
-import PharmacyQueueLoading from '@/components/pharmacy-queue/PharmacyQueueLoading';
+import React, { useState, useCallback } from "react";
+import { useServicePointContext } from "@/contexts/ServicePointContext";
+import { MedicationsProvider } from "@/components/medications/context/MedicationsContext";
+import PharmacyQueueHeader from "@/components/pharmacy-queue/PharmacyQueueHeader";
+import PharmacyQueueEmptyState from "@/components/pharmacy-queue/PharmacyQueueEmptyState";
+import PharmacyQueueContent from "@/components/pharmacy-queue/PharmacyQueueContent";
+import PharmacyQueueLoading from "@/components/pharmacy-queue/PharmacyQueueLoading";
 
 const PharmacyQueue = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
-  const { 
+
+  const {
     selectedServicePoint,
     setSelectedServicePoint,
     servicePoints,
-    loading: loadingServicePoints
+    loading: loadingServicePoints,
   } = useServicePointContext();
 
   const handleServicePointChange = (value: string) => {
-    const servicePoint = servicePoints.find(sp => sp.id === value);
+    const servicePoint = servicePoints.find((sp) => sp.id === value);
     if (servicePoint) {
       setSelectedServicePoint(servicePoint);
     }
   };
 
   const handleManualRefresh = useCallback(() => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   }, []);
 
   if (loadingServicePoints) {
@@ -44,7 +43,7 @@ const PharmacyQueue = () => {
           />
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           {!selectedServicePoint ? (
             <PharmacyQueueEmptyState />
           ) : (

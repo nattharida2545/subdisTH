@@ -1,6 +1,9 @@
-
-import { Queue, QueueStatus, QueueTypeEnum } from '@/integrations/supabase/schema';
-import { ensureQueueStatus, ensureQueueTypeEnum } from './queueTypes';
+import {
+  Queue,
+  QueueStatus,
+  QueueTypeEnum,
+} from "@/integrations/supabase/schema";
+import { ensureQueueStatus, ensureQueueTypeEnum } from "./queueTypes";
 
 // Function to convert a Supabase queue result to a strongly-typed Queue object
 export const mapToQueueObject = (queueData: any): Queue => {
@@ -8,7 +11,7 @@ export const mapToQueueObject = (queueData: any): Queue => {
     id: queueData.id,
     number: queueData.number,
     patient_id: queueData.patient_id,
-    type: ensureQueueTypeEnum(queueData.type),
+    type: queueData.type,
     status: ensureQueueStatus(queueData.status),
     service_point_id: queueData.service_point_id,
     notes: queueData.notes || null,
@@ -16,6 +19,10 @@ export const mapToQueueObject = (queueData: any): Queue => {
     updated_at: queueData.updated_at,
     called_at: queueData.called_at || null,
     completed_at: queueData.completed_at || null,
-    queue_date: queueData.queue_date || null
+    queue_date: queueData.queue_date || null,
+    skipped_at: queueData.skipped_at || null,
+    cancelled_at: queueData.cancelled_at || null,
+    paused_at: queueData.paused_at || null,
+    appointment_id: queueData.appointment_id || null,
   };
 };

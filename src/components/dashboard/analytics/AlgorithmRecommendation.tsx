@@ -1,7 +1,12 @@
-
-import * as React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { QueueAlgorithmType } from '@/utils/queueAlgorithms';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Lightbulb } from "lucide-react";
+import { QueueAlgorithmType } from "@/utils/queueAlgorithms";
+import AlgorithmComparisonDialog from "@/components/analytics/AlgorithmComparisonDialog";
+import { useSettingsContext } from "@/contexts/SettingsContext";
+import { toast } from "sonner";
 
 interface AlgorithmRecommendationProps {
   shouldChangeAlgorithm: boolean;
@@ -20,40 +25,70 @@ const AlgorithmRecommendation: React.FC<AlgorithmRecommendationProps> = ({
   urgentCount,
   elderlyCount,
   waitingQueueCount,
-  handleChangeAlgorithm
+  handleChangeAlgorithm,
 }) => {
   if (!shouldChangeAlgorithm) return null;
-  
-  const getAlgorithmName = (algorithm: QueueAlgorithmType) => {
-    switch (algorithm) {
-      case QueueAlgorithmType.FIFO: return "First In, First Out (FIFO)";
-      case QueueAlgorithmType.PRIORITY: return "ลำดับความสำคัญ (Priority Queue)";
-      case QueueAlgorithmType.MULTILEVEL: return "หลายระดับ (Multilevel Queue)";
-      case QueueAlgorithmType.MULTILEVEL_FEEDBACK: return "ปรับตามเวลารอ (Feedback Queue)";
-      default: return "อัลกอริทึมพื้นฐาน";
+  const { updateMultipleSettings } = useSettingsContext();
+  const fhandleChangeAlgorithm = async () => {
+    const success = await updateMultipleSettings({
+      queue_algorithm: recommendedAlgorithm,
+    });
+    if (success) {
+      // Save to localStorage for immediate use
+      handleChangeAlgorithm();
+      toast.success("บันทึกอัลกอริทึมคิวเรียบร้อยแล้ว");
+    } else {
+      toast.error("ไม่สามารถบันทึกอัลกอริทึมคิวได้");
     }
   };
-  
+
+  const getRecommendationReason = () => {
+    const urgentPercentage =
+      waitingQueueCount > 0
+        ? Math.round((urgentCount / waitingQueueCount) * 100)
+        : 0;
+    const elderlyPercentage =
+      waitingQueueCount > 0
+        ? Math.round((elderlyCount / waitingQueueCount) * 100)
+        : 0;
+
+    if (recommendedAlgorithm === QueueAlgorithmType.PRIORITY) {
+      return `พบคิวเร่งด่วน ${urgentCount} คิว (${urgentPercentage}% ของคิวทั้งหมด)`;
+    } else if (recommendedAlgorithm === QueueAlgorithmType.MULTILEVEL) {
+      return `พบคิวผู้สูงอายุ ${elderlyCount} คิว (${elderlyPercentage}% ของคิวทั้งหมด)`;
+    } else {
+      return `คิวจำนวนมาก (${waitingQueueCount} คิว) เหมาะสำหรับอัลกอริธึมแบบปรับตัว`;
+    }
+  };
+
   return (
-    <Card className="shadow-sm bg-yellow-50 border-yellow-200 mb-6">
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-yellow-800">
-            <strong>คำแนะนำ:</strong> อัลกอริทึมปัจจุบัน {getAlgorithmName(currentAlgorithm)} 
-            อาจไม่เหมาะสมกับสถานการณ์ปัจจุบัน
-          </p>
-          <p className="text-sm text-yellow-800">
-            ระบบแนะนำให้ใช้ {getAlgorithmName(recommendedAlgorithm)} เนื่องจากมี
-            {urgentCount > 0 ? ` ${urgentCount} คิวเร่งด่วน ` : ''}
-            {elderlyCount > 0 ? ` ${elderlyCount} คิวผู้สูงอายุ ` : ''}
-            จากทั้งหมด {waitingQueueCount} คิว
-          </p>
-          <button 
-            className="bg-yellow-200 hover:bg-yellow-300 text-yellow-800 py-1 px-2 rounded text-sm"
-            onClick={handleChangeAlgorithm}
-          >
-            เปลี่ยนเป็น {getAlgorithmName(recommendedAlgorithm)}
-          </button>
+    <Card className="border-amber-200 bg-amber-50">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-amber-800">
+          <Lightbulb className="h-5 w-5" />
+          คำแนะนำการปรับปรุงอัลกอริธึม
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Alert className="border-amber-200 bg-amber-100">
+          <AlertDescription className="text-amber-800">
+            <strong>เหตุผล:</strong> {getRecommendationReason()}
+            <br />
+            <strong>แนะนำ:</strong> เปลี่ยนจาก{" "}
+            <Badge variant="outline">{currentAlgorithm}</Badge> เป็น{" "}
+            <Badge className="bg-amber-600">{recommendedAlgorithm}</Badge>
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex justify-center">
+          <AlgorithmComparisonDialog
+            currentAlgorithm={currentAlgorithm}
+            recommendedAlgorithm={recommendedAlgorithm}
+            urgentCount={urgentCount}
+            elderlyCount={elderlyCount}
+            waitingQueueCount={waitingQueueCount}
+            onConfirmChange={fhandleChangeAlgorithm}
+          />
         </div>
       </CardContent>
     </Card>

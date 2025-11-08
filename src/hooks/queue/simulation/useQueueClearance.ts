@@ -13,47 +13,100 @@ export const useQueueClearance = () => {
 
       const today = new Date().toISOString().split('T')[0];
 
-      // First, check if there are any test queues to delete
-      const { data: testQueues, error: checkError } = await supabase
+      // First, check if there are any simulation queues to delete
+      const { data: simulationQueues, error: checkError } = await supabase
         .from('queues')
         .select('id')
-        .or('notes.like.%คิวทดสอบ%,notes.like.%สร้างโดยระบบ%')
+        .like('notes', '%ข้อมูลจำลองโรงพยาบาล%')
         .eq('queue_date', today);
 
       if (checkError) {
-        logger.error('Error checking for test queues:', checkError);
+        logger.error('Error checking for simulation queues:', checkError);
         throw new Error(`Database error: ${checkError.message}`);
       }
 
-      if (!testQueues || testQueues.length === 0) {
-        logger.info('No test queues found to delete');
-        toast.info('ไม่พบคิวทดสอบที่จะลบ');
-        return;
+      if (!simulationQueues || simulationQueues.length === 0) {
+        logger.info('No simulation queues found to delete');
+        toast.info('ไม่พบคิวจำลองที่จะลบ');
+        return 0;
       }
 
-      logger.info(`Found ${testQueues.length} test queues to delete`);
+      logger.info(`Found ${simulationQueues.length} simulation queues to delete`);
 
-      // Delete the test queues
+      // Delete the simulation queues
       const { error: deleteError } = await supabase
         .from('queues')
         .delete()
-        .or('notes.like.%คิวทดสอบ%,notes.like.%สร้างโดยระบบ%')
+        .like('notes', '%ข้อมูลจำลองโรงพยาบาล%')
         .eq('queue_date', today);
 
       if (deleteError) {
-        logger.error('Error deleting test queues:', deleteError);
+        logger.error('Error deleting simulation queues:', deleteError);
         throw new Error(`Database error: ${deleteError.message}`);
       }
 
-      logger.info(`Successfully deleted ${testQueues.length} test queues`);
-      toast.success(`ลบคิวทดสอบเรียบร้อยแล้ว (${testQueues.length} คิว)`);
+      logger.info(`Successfully deleted ${simulationQueues.length} simulation queues`);
+      toast.success(`ลบคิวจำลองเรียบร้อยแล้ว (${simulationQueues.length} คิว)`);
+
+      return simulationQueues.length;
 
     } catch (error) {
       logger.error('Error clearing test queues:', error);
       const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
       toast.error(`เกิดข้อผิดพลาดในการลบคิวทดสอบ: ${errorMessage}`);
+      throw error;
     }
   };
 
-  return { clearTestQueues };
+  const clearAllTodayQueues = async () => {
+    try {
+      logger.info('Clearing all today queues...');
+      toast.info('กำลังลบคิววันนี้ทั้งหมด...');
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // Get count of all queues for today
+      const { data: todayQueues, error: checkError } = await supabase
+        .from('queues')
+        .select('id')
+        .eq('queue_date', today);
+
+      if (checkError) {
+        logger.error('Error checking for today queues:', checkError);
+        throw new Error(`Database error: ${checkError.message}`);
+      }
+
+      if (!todayQueues || todayQueues.length === 0) {
+        logger.info('No queues found for today');
+        toast.info('ไม่พบคิววันนี้ที่จะลบ');
+        return 0;
+      }
+
+      logger.info(`Found ${todayQueues.length} queues for today to delete`);
+
+      // Delete all queues for today
+      const { error: deleteError } = await supabase
+        .from('queues')
+        .delete()
+        .eq('queue_date', today);
+
+      if (deleteError) {
+        logger.error('Error deleting today queues:', deleteError);
+        throw new Error(`Database error: ${deleteError.message}`);
+      }
+
+      logger.info(`Successfully deleted ${todayQueues.length} queues for today`);
+      toast.success(`ลบคิววันนี้ทั้งหมดเรียบร้อยแล้ว (${todayQueues.length} คิว)`);
+
+      return todayQueues.length;
+
+    } catch (error) {
+      logger.error('Error clearing all today queues:', error);
+      const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
+      toast.error(`เกิดข้อผิดพลาดในการลบคิววันนี้: ${errorMessage}`);
+      throw error;
+    }
+  };
+
+  return { clearTestQueues, clearAllTodayQueues };
 };

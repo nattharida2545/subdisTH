@@ -1,11 +1,10 @@
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { LogOut, Trash2, AlertCircle, User } from 'lucide-react';
-import { Patient, Queue } from '@/integrations/supabase/schema';
-import PatientCardWithQueue from './PatientCardWithQueue';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LogOut, Trash2, AlertCircle, User } from "lucide-react";
+import { Patient, Queue } from "@/integrations/supabase/schema";
+import PatientCardWithQueue from "./PatientCardWithQueue";
 
 interface PatientSelectionViewProps {
   patients: Patient[];
@@ -20,62 +19,94 @@ const PatientSelectionView: React.FC<PatientSelectionViewProps> = ({
   selectedPatient,
   onSelectPatient,
   onLogout,
-  onClearQueueHistory
+  onClearQueueHistory,
 }) => {
   const navigate = useNavigate();
 
   const handleAppointmentsClick = (patient: Patient) => {
-    console.log('[PatientSelectionView] Appointments button clicked for patient:', patient.name);
-    
+    console.log(
+      "[PatientSelectionView] Appointments button clicked for patient:",
+      patient.name
+    );
+
     try {
       // Store the selected patient context for the appointments page
-      sessionStorage.setItem('appointmentPatientContext', JSON.stringify(patient));
-      navigate('/patient-portal/appointments');
-      console.log('[PatientSelectionView] Navigation to appointments initiated for patient:', patient.name);
+      sessionStorage.setItem(
+        "appointmentPatientContext",
+        JSON.stringify(patient)
+      );
+      navigate("/patient-portal/appointments");
+      console.log(
+        "[PatientSelectionView] Navigation to appointments initiated for patient:",
+        patient.name
+      );
     } catch (error) {
-      console.error('[PatientSelectionView] Navigation error:', error);
+      console.error("[PatientSelectionView] Navigation error:", error);
     }
   };
 
   const handleMedicationsClick = (patient: Patient) => {
-    console.log('[PatientSelectionView] Medications button clicked for patient:', patient.name);
-    
+    console.log(
+      "[PatientSelectionView] Medications button clicked for patient:",
+      patient.name
+    );
+
     try {
       // Store the selected patient context for medications page
-      sessionStorage.setItem('medicationPatientContext', JSON.stringify(patient));
+      sessionStorage.setItem(
+        "medicationPatientContext",
+        JSON.stringify(patient)
+      );
       // Navigate to a medications page (you may need to create this route)
-      navigate('/patient-portal/medications');
-      console.log('[PatientSelectionView] Navigation to medications initiated for patient:', patient.name);
+      navigate("/patient-portal/medications");
+      console.log(
+        "[PatientSelectionView] Navigation to medications initiated for patient:",
+        patient.name
+      );
     } catch (error) {
-      console.error('[PatientSelectionView] Medications navigation error:', error);
+      console.error(
+        "[PatientSelectionView] Medications navigation error:",
+        error
+      );
     }
   };
 
   const handleProfileClick = (patient: Patient) => {
-    console.log('[PatientSelectionView] Profile button clicked for patient:', patient.name);
-    
+    console.log(
+      "[PatientSelectionView] Profile button clicked for patient:",
+      patient.name
+    );
+
     try {
       // Store the selected patient context for the profile page
-      sessionStorage.setItem('profilePatientContext', JSON.stringify(patient));
-      navigate('/patient-portal/profile');
-      console.log('[PatientSelectionView] Navigation to profile initiated for patient:', patient.name);
+      sessionStorage.setItem("profilePatientContext", JSON.stringify(patient));
+      navigate("/patient-portal/profile");
+      console.log(
+        "[PatientSelectionView] Navigation to profile initiated for patient:",
+        patient.name
+      );
     } catch (error) {
-      console.error('[PatientSelectionView] Profile navigation error:', error);
+      console.error("[PatientSelectionView] Profile navigation error:", error);
     }
   };
 
   const handleQueueClick = (patient: Patient, queue: Queue) => {
-    console.log('[PatientSelectionView] Queue button clicked for patient:', patient.name, 'Queue:', queue.id);
-    
+    console.log(
+      "[PatientSelectionView] Queue button clicked for patient:",
+      patient.name,
+      "Queue:",
+      queue.id
+    );
+
     try {
       // Store both patient and queue context
-      sessionStorage.setItem('queuePatientContext', JSON.stringify(patient));
-      sessionStorage.setItem('activeQueueContext', JSON.stringify(queue));
+      sessionStorage.setItem("queuePatientContext", JSON.stringify(patient));
+      sessionStorage.setItem("activeQueueContext", JSON.stringify(queue));
       // Navigate back to the main patient portal to show active queue view
-      navigate('/patient-portal');
-      console.log('[PatientSelectionView] Navigation to queue view initiated');
+      navigate("/patient-portal/");
+      console.log("[PatientSelectionView] Navigation to queue view initiated");
     } catch (error) {
-      console.error('[PatientSelectionView] Queue navigation error:', error);
+      console.error("[PatientSelectionView] Queue navigation error:", error);
     }
   };
 
@@ -83,7 +114,9 @@ const PatientSelectionView: React.FC<PatientSelectionViewProps> = ({
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">เลือกผู้ป่วย</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            ระบบสำหรับผู้ป่วย
+          </h1>
           <Button
             variant="outline"
             onClick={onLogout}
@@ -101,7 +134,8 @@ const PatientSelectionView: React.FC<PatientSelectionViewProps> = ({
               <div className="flex items-center gap-2 text-blue-800">
                 <AlertCircle className="w-5 h-5" />
                 <span className="font-medium">
-                  พบข้อมูลผู้ป่วย {patients.length} รายการ กรุณาเลือกผู้ป่วยที่ต้องการจัดการข้อมูล
+                  พบข้อมูลผู้ป่วย {patients.length} รายการ
+                  กรุณาเลือกผู้ป่วยที่ต้องการจัดการข้อมูล
                 </span>
               </div>
             </CardContent>
@@ -144,15 +178,17 @@ const PatientSelectionView: React.FC<PatientSelectionViewProps> = ({
         )} */}
 
         {/* No selection message */}
-        {!selectedPatient && patients.length > 0 && (
+        {/* {!selectedPatient && patients.length > 0 && (
           <Card className="border-gray-200">
             <CardContent className="p-6 text-center text-gray-500">
               <User className="w-12 h-12 mx-auto mb-3 text-gray-400" />
               <p>กรุณาเลือกผู้ป่วยที่ต้องการจัดการข้อมูล</p>
-              <p className="text-sm mt-1">คลิกที่การ์ดผู้ป่วยด้านบนเพื่อเลือก</p>
+              <p className="text-sm mt-1">
+                คลิกที่การ์ดผู้ป่วยด้านบนเพื่อเลือก
+              </p>
             </CardContent>
           </Card>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -1,16 +1,17 @@
-
-import React from 'react';
+import React from "react";
 
 interface QueueBoardAlgorithmInfoProps {
   algorithmName: string;
 }
 
-const QueueBoardAlgorithmInfo: React.FC<QueueBoardAlgorithmInfoProps> = ({ algorithmName }) => {
+const QueueBoardAlgorithmInfo: React.FC<QueueBoardAlgorithmInfoProps> = ({
+  algorithmName,
+}) => {
   return (
     <div className="bg-white shadow-md py-2">
       <div className="container mx-auto px-6">
         <p className="text-center text-sm text-gray-600">
-          อัลกอริทึมการเรียกคิว: <span className="font-semibold">{algorithmName}</span>
+          <span className="font-semibold">{algorithmName}</span>
         </p>
       </div>
     </div>

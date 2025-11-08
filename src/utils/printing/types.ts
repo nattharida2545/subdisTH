@@ -1,5 +1,4 @@
-
-import { QueueTypeEnum } from '@/integrations/supabase/schema';
+import { QueueTypeEnum } from "@/integrations/supabase/schema";
 
 export interface PrintQueueOptions {
   queueNumber: number;
@@ -9,4 +8,5 @@ export interface PrintQueueOptions {
   patientLineId?: string;
   purpose?: string;
   estimatedWaitTime?: number;
+  waitTiemQueueNext?: number;
 }

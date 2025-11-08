@@ -1,18 +1,28 @@
-
-import * as React from 'react';
-import { TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
-import { Queue, Patient, ServicePoint, QueueStatus } from '@/integrations/supabase/schema';
-import QueueList from '../QueueList';
-import { QueueType } from '@/hooks/useQueueTypes';
+import * as React from "react";
+import { TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Queue,
+  Patient,
+  ServicePoint,
+  QueueStatus,
+} from "@/integrations/supabase/schema";
+import QueueList from "../QueueList";
+import { QueueType } from "@/hooks/useQueueTypes";
 
 interface QueueTabContentProps {
   queues: Queue[];
   patients: Patient[];
   status: QueueStatus;
   getPatientName: (patientId: string) => string;
-  onUpdateStatus?: (queueId: string, status: QueueStatus) => Promise<Queue | null>;
-  onCallQueue?: (queueId: string, manualServicePointId?: string) => Promise<Queue | null>;
+  onUpdateStatus?: (
+    queueId: string,
+    status: QueueStatus
+  ) => Promise<Queue | null>;
+  onCallQueue?: (
+    queueId: string,
+    manualServicePointId?: string
+  ) => Promise<Queue | null>;
   onRecallQueue?: (queueId: string) => void;
   onTransferQueue?: (queueId: string) => void;
   onHoldQueue?: (queueId: string) => void;
@@ -22,11 +32,13 @@ interface QueueTabContentProps {
   servicePoints: ServicePoint[];
   getIntelligentServicePointSuggestion?: (queue: Queue) => ServicePoint | null;
   isPharmacyInterface?: boolean;
+  getPatientById: (id: string) => Patient;
 }
 
 const QueueTabContent: React.FC<QueueTabContentProps> = ({
   queues,
   patients,
+  getPatientById,
   status,
   getPatientName,
   onUpdateStatus,
@@ -39,13 +51,14 @@ const QueueTabContent: React.FC<QueueTabContentProps> = ({
   selectedServicePoint,
   servicePoints,
   getIntelligentServicePointSuggestion,
-  isPharmacyInterface = false
+  isPharmacyInterface = false,
 }) => {
   return (
     <Card className="h-full border-0 shadow-none">
       <CardContent className="h-full p-0">
         <QueueList
           queues={queues}
+          getPatientById={getPatientById}
           getPatientName={getPatientName}
           onUpdateStatus={onUpdateStatus}
           onCallQueue={onCallQueue}
@@ -57,7 +70,9 @@ const QueueTabContent: React.FC<QueueTabContentProps> = ({
           status={status}
           selectedServicePoint={selectedServicePoint}
           servicePoints={servicePoints}
-          getIntelligentServicePointSuggestion={getIntelligentServicePointSuggestion}
+          getIntelligentServicePointSuggestion={
+            getIntelligentServicePointSuggestion
+          }
           showServicePointInfo={true}
           isPharmacyInterface={isPharmacyInterface}
         />

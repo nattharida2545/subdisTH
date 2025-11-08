@@ -18,8 +18,8 @@ SELECT cron.schedule(
   $$
   SELECT
     net.http_post(
-        url:='https://lkclreldnbejfubzhube.supabase.co/functions/v1/appointment-reminder-sms',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrY2xyZWxkbmJlamZ1YnpodWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzODg2MjcsImV4cCI6MjA1Nzk2NDYyN30.1Jz-zMLWVTRePFx947cGCVAYNKFswD25FNMTPGyciRE"}'::jsonb,
+        url:='https://yiquudnrheitmcnwowlh.supabase.co/functions/v1/appointment-reminder-sms',
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcXV1ZG5yaGVpdG1jbndvd2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNjI0NzMsImV4cCI6MjA3MDgzODQ3M30.8UzLhEbeaB6iV7EaCQmR0tW5WzLM11zIfRZ9_nFeNEQ"}'::jsonb,
         body:='{"time": "11:00"}'::jsonb
     ) as request_id;
   $$
@@ -32,8 +32,8 @@ SELECT cron.schedule(
   $$
   SELECT
     net.http_post(
-        url:='https://lkclreldnbejfubzhube.supabase.co/functions/v1/appointment-reminder-sms',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrY2xyZWxkbmJlamZ1YnpodWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzODg2MjcsImV4cCI6MjA1Nzk2NDYyN30.1Jz-zMLWVTRePFx947cGCVAYNKFswD25FNMTPGyciRE"}'::jsonb,
+        url:='https://yiquudnrheitmcnwowlh.supabase.co/functions/v1/appointment-reminder-sms',
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcXV1ZG5yaGVpdG1jbndvd2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyNjI0NzMsImV4cCI6MjA3MDgzODQ3M30.8UzLhEbeaB6iV7EaCQmR0tW5WzLM11zIfRZ9_nFeNEQ"}'::jsonb,
         body:='{"time": "17:00"}'::jsonb
     ) as request_id;
   $$

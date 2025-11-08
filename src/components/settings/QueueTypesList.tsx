@@ -143,7 +143,7 @@ const QueueTypesList: React.FC<QueueTypesListProps> = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle>ประเภทคิว</CardTitle>
+          <CardTitle>ประเภทคิวรับยา</CardTitle>
           <CardDescription>
             กำหนดค่าประเภทคิวสำหรับผู้ป่วยกลุ่มต่างๆ
           </CardDescription>

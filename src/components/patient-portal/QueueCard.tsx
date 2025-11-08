@@ -19,7 +19,7 @@ const QueueCard: React.FC<QueueCardProps> = ({
   onCancelQueue,
   cancellingQueue
 }) => {
-  const isPriority = queue.type === 'PRIORITY';
+  const isPriority = queue.type === 'URGENT';
 
   const getQueueTypeLabel = (type: string) => {
     switch (type) {

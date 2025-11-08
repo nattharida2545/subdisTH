@@ -1,24 +1,29 @@
-
-import React, { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import LineCredentialFields from './line/LineCredentialFields';
-import LineActionButtons from './line/LineActionButtons';
-import LineOfficialAccountIcon from './line/LineOfficialAccountIcon';
-import { useLineSettings } from './line/hooks/useLineSettings';
-import { useLineSettingsData } from '@/hooks/useLineSettingsData';
-import LineMessageTemplates from './line/LineMessageTemplates';
+import React, { useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import LineCredentialFields from "./line/LineCredentialFields";
+import LineActionButtons from "./line/LineActionButtons";
+import LineOfficialAccountIcon from "./line/LineOfficialAccountIcon";
+import { useLineSettings } from "./line/hooks/useLineSettings";
+import { useLineSettingsData } from "@/hooks/useLineSettingsData";
+import LineMessageTemplates from "./line/LineMessageTemplates";
 
 const LineSettings = () => {
   // First fetch the data
-  const { 
-    lineSettings: savedLineSettings, 
-    ttsConfig: savedTtsConfig, 
-    loading
+  const {
+    lineSettings: savedLineSettings,
+    ttsConfig: savedTtsConfig,
+    loading,
   } = useLineSettingsData();
 
   // Then use the settings hook - must come after data fetching
   const lineSettingsHook = useLineSettings();
-  
+
   // Destructure values from the hook with useMemo to ensure stability
   const {
     isEditing,
@@ -50,25 +55,30 @@ const LineSettings = () => {
   }
 
   // Use saved settings from database if available, otherwise use default fallback
-  const currentLineSettings = savedLineSettings || lineSettings || {
-    channelId: "",
-    channelSecret: "",
-    accessToken: "",
-    loginChannelId: "",
-    loginChannelSecret: "",
-    callbackUrl: "https://subdisth-que.netlify.app/auth/line/callback",
-    liffId: "",
-    welcomeMessage: "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง",
-    queueReceivedMessage: "คุณได้รับคิวหมายเลข {queueNumber} ประเภท: {queueType}\nระยะเวลารอโดยประมาณ: {estimatedWaitTime} นาที",
-    queueCalledMessage: "เรียนคุณ {patientName}\nถึงคิวของคุณแล้ว! กรุณามาที่ช่องบริการ {counter}\nหมายเลขคิวของคุณคือ: {queueNumber}"
-  };
+  const currentLineSettings = savedLineSettings ||
+    lineSettings || {
+      channelId: "",
+      channelSecret: "",
+      accessToken: "",
+      loginChannelId: "",
+      loginChannelSecret: "",
+      callbackUrl: "https://subdis-th-que.netlify.app/auth/line/callback",
+      liffId: "",
+      welcomeMessage:
+        "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลส่งเสริมสุขภาพตำบลหนองแวง",
+      queueReceivedMessage:
+        "คุณได้รับคิวหมายเลข {queueNumber} ประเภท: {queueType}\nระยะเวลารอโดยประมาณ: {estimatedWaitTime} นาที",
+      queueCalledMessage:
+        "เรียนคุณ {patientName}\nถึงคิวของคุณแล้ว! กรุณามาที่ช่องบริการ {counter}\nหมายเลขคิวของคุณคือ: {queueNumber}",
+    };
 
-  const currentTtsConfig = savedTtsConfig || ttsConfig || {
-    enabled: true,
-    volume: 1.0,
-    rate: 1.0,
-    language: 'th-TH'
-  };
+  const currentTtsConfig = savedTtsConfig ||
+    ttsConfig || {
+      enabled: true,
+      volume: 1.0,
+      rate: 1.0,
+      language: "th-TH",
+    };
 
   return (
     <>
@@ -77,19 +87,20 @@ const LineSettings = () => {
           <div className="space-y-1">
             <CardTitle>LINE Official Account</CardTitle>
             <CardDescription>
-              ตั้งค่าการเชื่อมต่อกับ LINE Official Account เพื่อการแจ้งเตือนผู้ป่วย
+              ตั้งค่าการเชื่อมต่อกับ LINE Official Account
+              เพื่อการแจ้งเตือนผู้ป่วย
             </CardDescription>
           </div>
           <LineOfficialAccountIcon />
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
-          <LineCredentialFields 
+          <LineCredentialFields
             lineSettings={currentLineSettings}
             isEditing={isEditing}
             handleChange={handleChange}
             errors={errors}
           />
-          
+
           <LineMessageTemplates
             lineSettings={currentLineSettings}
             isEditing={isEditing}
@@ -97,8 +108,8 @@ const LineSettings = () => {
             handleTestMessage={handleTestMessage}
             isTesting={isTestingMessage}
           />
-          
-          <LineActionButtons 
+
+          <LineActionButtons
             isEditing={isEditing}
             isTesting={isTesting}
             handleEdit={handleEdit}

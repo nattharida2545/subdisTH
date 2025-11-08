@@ -14,9 +14,11 @@ export interface PatientMedication {
   medication_id: string;
   dosage: string;
   instructions?: string;
+  dispensed?: number | null;
   start_date: string;
   end_date?: string;
   notes?: string;
+  patient_check_id?: string;
   created_at: string;
   updated_at: string;
   medication?: Medication; // Joined medication data
@@ -123,7 +125,7 @@ export const usePatientMedications = (patientId?: string) => {
 
       const { data, error } = await supabase
         .from('patient_medications')
-        .insert(medicationData)
+        .insert(medicationData as any)
         .select(`*, medication:medications(*)`);
 
       if (error) {
@@ -159,7 +161,7 @@ export const usePatientMedications = (patientId?: string) => {
 
       const { data, error } = await supabase
         .from('patient_medications')
-        .update(medicationData)
+        .update(medicationData as any)
         .eq('id', id)
         .select(`*, medication:medications(*)`);
 

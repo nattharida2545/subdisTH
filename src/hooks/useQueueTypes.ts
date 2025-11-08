@@ -1,12 +1,11 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { QueueTypeEnum } from "@/integrations/supabase/schema";
+import { toast } from "sonner";
+import { createLogger } from "@/utils/logger";
+import { QueueAlgorithmType } from "@/utils/queueAlgorithms";
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { QueueTypeEnum } from '@/integrations/supabase/schema';
-import { toast } from 'sonner';
-import { createLogger } from '@/utils/logger';
-import { QueueAlgorithmType } from '@/utils/queueAlgorithms';
-
-const logger = createLogger('useQueueTypes');
+const logger = createLogger("useQueueTypes");
 
 // Extend the QueueType with additional properties from queue_types table
 export interface QueueType {
@@ -15,7 +14,7 @@ export interface QueueType {
   name: string;
   prefix: string;
   purpose?: string;
-  format: '0' | '00' | '000';
+  format: "0" | "00" | "000";
   enabled: boolean;
   algorithm: string;
   priority: number;
@@ -24,11 +23,13 @@ export interface QueueType {
 }
 
 // Helper functions for type validations
-export const ensureValidFormat = (format: string | undefined): '0' | '00' | '000' => {
-  if (format === '0' || format === '00' || format === '000') {
+export const ensureValidFormat = (
+  format: string | undefined
+): "0" | "00" | "000" => {
+  if (format === "0" || format === "00" || format === "000") {
     return format;
   }
-  return '00'; // Default to '00' format
+  return "00"; // Default to '00' format
 };
 
 export const ensureValidAlgorithm = (algorithm: string | undefined): string => {
@@ -37,25 +38,27 @@ export const ensureValidAlgorithm = (algorithm: string | undefined): string => {
 };
 
 // Convert a QueueTypeEnum to QueueType if needed
-export const convertToQueueType = (queueTypeEnum: QueueTypeEnum | QueueType): QueueType => {
-  if (typeof queueTypeEnum === 'string') {
+export const convertToQueueType = (
+  queueTypeEnum: QueueTypeEnum | QueueType
+): QueueType => {
+  if (typeof queueTypeEnum === "string") {
     // This is a QueueTypeEnum, create a basic QueueType from it
     return {
       id: queueTypeEnum,
       code: queueTypeEnum,
       name: queueTypeEnum,
       prefix: queueTypeEnum.charAt(0),
-      format: '00',
+      format: "00",
       enabled: true,
       algorithm: QueueAlgorithmType.FIFO,
-      priority: 5
+      priority: 5,
     };
   }
   // Already a QueueType, ensure format and algorithm are valid
   return {
     ...queueTypeEnum,
     format: ensureValidFormat(queueTypeEnum.format),
-    algorithm: ensureValidAlgorithm(queueTypeEnum.algorithm)
+    algorithm: ensureValidAlgorithm(queueTypeEnum.algorithm),
   };
 };
 
@@ -71,28 +74,46 @@ export const useQueueTypes = () => {
       setError(null);
 
       const { data, error } = await supabase
-        .from('queue_types')
-        .select('*')
-        .order('priority', { ascending: true });
+        .from("queue_types")
+        .select("*")
+        .order("priority", { ascending: true });
+
+      const { data: queueTypesIns } = await (supabase as any)
+        .from("queue_ins_types")
+        .select("*");
 
       if (error) {
         throw error;
       }
 
+      let typedData: QueueType[] = [];
+
       if (data) {
         // Ensure format property is correctly typed
-        const typedData = data.map((item) => ({
+        const formattedData = data.map((item) => ({
           ...item,
           format: ensureValidFormat(item.format),
-          algorithm: ensureValidAlgorithm(item.algorithm)
+          algorithm: ensureValidAlgorithm(item.algorithm),
         }));
-        
-        setQueueTypes(typedData as QueueType[]);
+
+        typedData.push(...formattedData);
       }
+
+      if (queueTypesIns) {
+        const formattedInsData = queueTypesIns.map((item) => ({
+          ...item,
+          format: ensureValidFormat(item.format),
+          algorithm: ensureValidAlgorithm(item.algorithm),
+        }));
+
+        typedData.push(...formattedInsData);
+      }
+
+      setQueueTypes(typedData);
     } catch (err: any) {
-      logger.error('Error fetching queue types:', err);
-      setError(err.message || 'Error fetching queue types');
-      toast.error('Failed to load queue types');
+      logger.error("Error fetching queue types:", err);
+      setError(err.message || "Error fetching queue types");
+      toast.error("Failed to load queue types");
     } finally {
       setLoading(false);
     }
@@ -107,7 +128,7 @@ export const useQueueTypes = () => {
     loading,
     error,
     fetchQueueTypes,
-    convertToQueueType
+    convertToQueueType,
   };
 };
 

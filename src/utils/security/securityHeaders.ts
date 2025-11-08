@@ -18,11 +18,11 @@ export const securityHeaders = {
   // Content Security Policy
   'Content-Security-Policy': `
     default-src 'self';
-    script-src 'self' https://lkclreldnbejfubzhube.supabase.co 'unsafe-inline' 'unsafe-eval';
+    script-src 'self' https://yiquudnrheitmcnwowlh.supabase.co 'unsafe-inline' 'unsafe-eval';
     style-src 'self' 'unsafe-inline';
-    img-src 'self' data: blob: https://lkclreldnbejfubzhube.supabase.co;
+    img-src 'self' data: blob: https://yiquudnrheitmcnwowlh.supabase.co;
     font-src 'self';
-    connect-src 'self' https://lkclreldnbejfubzhube.supabase.co wss://lkclreldnbejfubzhube.supabase.co;
+    connect-src 'self' https://yiquudnrheitmcnwowlh.supabase.co wss://lkclreldnbejfubzhube.supabase.co;
     frame-src 'none';
     object-src 'none';
     base-uri 'self';

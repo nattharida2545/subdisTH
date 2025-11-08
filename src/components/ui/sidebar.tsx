@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import {
   NavigationMenu,
@@ -7,14 +6,14 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle
+  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { createLogger } from "@/utils/logger";
 
-const logger = createLogger('Sidebar');
+const logger = createLogger("Sidebar");
 
 interface SidebarProps {
   className?: string;
@@ -36,7 +35,9 @@ const SidebarContext = React.createContext<{
   setIsOpen: () => {},
 });
 
-export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [isOpen, setIsOpen] = React.useState(true);
 
   return (
@@ -49,7 +50,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
 export const useSidebar = () => {
   const context = React.useContext(SidebarContext);
   if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
+    throw new Error("useSidebar must be used within a SidebarProvider");
   }
   return context;
 };
@@ -57,14 +58,19 @@ export const useSidebar = () => {
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   // Use our custom theme hook if needed
   const { theme } = useTheme();
-  
-  logger.debug('Component rendering'); // Changed from info to debug
-  
+
+  logger.debug("Component rendering"); // Changed from info to debug
+
   return (
     <NavigationMenu className={cn("hidden lg:flex items-center", className)}>
       <NavigationMenuList>
         <SidebarItem title="Dashboard" href="/" icon={null} />
-        <SidebarItem title="Queue Management" href="/queue-management" icon={null} />
+        <SidebarItem
+          title="Queue Management"
+          href="/queue-management"
+          icon={null}
+        />
+        <SidebarItem title="INS Queue" href="/ins-queue" icon={null} />
         <SidebarItem title="Analytics" href="/analytics" icon={null} />
         <SidebarItem title="Queue Board" href="/queue-board" icon={null} />
         <SidebarItem title="Patients" href="/patients" icon={null} />
@@ -77,7 +83,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   );
 };
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ title, href, icon, className }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  title,
+  href,
+  icon,
+  className,
+}) => {
   const location = useLocation();
   const isActive = location.pathname === href;
 

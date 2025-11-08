@@ -1,9 +1,11 @@
-
-import * as React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Medication } from '@/integrations/supabase/schema';
-import { medicationFormSchema, MedicationFormValues } from '../schemas/medicationSchema';
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Medication } from "@/integrations/supabase/schema";
+import {
+  medicationFormSchema,
+  MedicationFormValues,
+} from "../schemas/medicationSchema";
 
 export const useMedicationForm = (
   medication: Medication | null,
@@ -13,12 +15,13 @@ export const useMedicationForm = (
   const form = useForm<MedicationFormValues>({
     resolver: zodResolver(medicationFormSchema),
     defaultValues: {
-      code: '',
-      name: '',
-      description: '',
-      unit: '',
+      code: "",
+      name: "",
+      description: "",
+      unit: "",
       stock: 0,
       min_stock: 0,
+      image: null,
     },
   });
 
@@ -28,19 +31,21 @@ export const useMedicationForm = (
         form.reset({
           code: medication.code,
           name: medication.name,
-          description: medication.description || '',
+          description: medication.description || "",
           unit: medication.unit,
           stock: medication.stock,
           min_stock: medication.min_stock,
+          image: medication.image ?? null,
         });
       } else {
         form.reset({
-          code: '',
-          name: '',
-          description: '',
-          unit: '',
+          code: "",
+          name: "",
+          description: "",
+          unit: "",
           stock: 0,
           min_stock: 0,
+          image: null,
         });
       }
     }

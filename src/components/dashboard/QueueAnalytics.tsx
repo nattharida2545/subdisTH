@@ -1,23 +1,31 @@
-
-import * as React from 'react';
-import { DirectionProvider } from '@radix-ui/react-direction';
-import { Queue } from '@/integrations/supabase/schema';
-import { cn } from '@/lib/utils';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAnalyticsData } from './analytics/useAnalyticsData';
-import SummaryCards from './analytics/SummaryCards';
-import AlgorithmRecommendation from './analytics/AlgorithmRecommendation';
-import TabSelector from './analytics/TabSelector';
-import WaitTimeChart from './analytics/WaitTimeChart';
-import ThroughputChart from './analytics/ThroughputChart';
-import QueueCompositionChart from './analytics/QueueCompositionChart';
+import * as React from "react";
+import { DirectionProvider } from "@radix-ui/react-direction";
+import { Queue, QueueIns } from "@/integrations/supabase/schema";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAnalyticsData } from "./analytics/useAnalyticsData";
+import { useCombinedWaitTimeData } from "./analytics/hooks/useCombinedWaitTimeData";
+import { useCombinedThroughputData } from "./analytics/hooks/useCombinedThroughputData";
+import { useTimeFrameState } from "./analytics/hooks/useTimeFrameState";
+import SummaryCards from "./analytics/SummaryCards";
+import AlgorithmRecommendation from "./analytics/AlgorithmRecommendation";
+import TabSelector from "./analytics/TabSelector";
+import WaitTimeChart from "./analytics/WaitTimeChart";
+import ThroughputChart from "./analytics/ThroughputChart";
+import QueueCompositionChart from "./analytics/QueueCompositionChart";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 
 interface QueueAnalyticsProps {
   completedQueues: Queue[];
   waitingQueues: Queue[];
   activeQueues: Queue[];
   skippedQueues: Queue[];
+  // INS Queue props
+  completedInsQueues?: QueueIns[];
+  waitingInsQueues?: QueueIns[];
+  activeInsQueues?: QueueIns[];
+  skippedInsQueues?: QueueIns[];
   className?: string;
 }
 
@@ -26,13 +34,23 @@ const QueueAnalytics: React.FC<QueueAnalyticsProps> = ({
   waitingQueues,
   activeQueues,
   skippedQueues,
-  className
+  // INS Queue data
+  completedInsQueues = [],
+  waitingInsQueues = [],
+  activeInsQueues = [],
+  skippedInsQueues = [],
+  className,
 }) => {
+  // Use separate hooks for better control
+  const { timeFrame, setTimeFrame } = useTimeFrameState();
+  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  
+  // Use combined data hooks that include both Pharmacy and INS queues
+  const combinedWaitTimeData = useCombinedWaitTimeData(timeFrame, refreshTrigger);
+  const combinedThroughputData = useCombinedThroughputData(timeFrame, refreshTrigger);
+  
+  // Get other analytics data from original hook
   const {
-    timeFrame,
-    setTimeFrame,
-    waitTimeData,
-    throughputData,
     averageWaitTime,
     averageServiceTime,
     currentAlgorithm,
@@ -40,8 +58,55 @@ const QueueAnalytics: React.FC<QueueAnalyticsProps> = ({
     shouldChangeAlgorithm,
     urgentCount,
     elderlyCount,
-    handleChangeAlgorithm
+    handleChangeAlgorithm,
   } = useAnalyticsData(completedQueues, waitingQueues);
+  
+  // Force refresh charts when queues change
+  React.useEffect(() => {
+    const totalQueues = completedQueues.length + waitingQueues.length + 
+                       completedInsQueues.length + waitingInsQueues.length;
+    if (totalQueues > 0) {
+      setRefreshTrigger(prev => prev + 1);
+    }
+  }, [completedQueues.length, waitingQueues.length, completedInsQueues.length, waitingInsQueues.length]);
+
+  const calculateInsStats = React.useMemo(() => {
+    const completedWithTimes = completedInsQueues.filter(
+      (q) => q.called_at && q.completed_at
+    );
+
+    let totalWaitTime = 0;
+    let totalServiceTime = 0;
+
+    completedWithTimes.forEach((queue) => {
+      if (queue.created_at && queue.called_at) {
+        const waitTime =
+          new Date(queue.called_at).getTime() -
+          new Date(queue.created_at).getTime();
+        totalWaitTime += waitTime / 1000 / 60;
+      }
+
+      if (queue.called_at && queue.completed_at) {
+        const serviceTime =
+          new Date(queue.completed_at).getTime() -
+          new Date(queue.called_at).getTime();
+        totalServiceTime += serviceTime / 1000 / 60; 
+      }
+    });
+
+    return {
+      averageInsWaitTime:
+        completedWithTimes.length > 0
+          ? totalWaitTime / completedWithTimes.length
+          : 0,
+      averageInsServiceTime:
+        completedWithTimes.length > 0
+          ? totalServiceTime / completedWithTimes.length
+          : 0,
+    };
+  }, [completedInsQueues]);
+
+  console.log("averageWaitTime", averageWaitTime);
 
   return (
     <DirectionProvider dir="ltr">
@@ -51,54 +116,76 @@ const QueueAnalytics: React.FC<QueueAnalyticsProps> = ({
           averageWaitTime={averageWaitTime}
           averageServiceTime={averageServiceTime}
           completedQueueCount={completedQueues.length}
+          waitingInsQueueCount={waitingInsQueues.length}
+          averageInsWaitTime={calculateInsStats.averageInsWaitTime}
+          averageInsServiceTime={calculateInsStats.averageInsServiceTime}
+          completedInsQueueCount={completedInsQueues.length}
         />
-        
+
         {shouldChangeAlgorithm && (
-          <AlgorithmRecommendation
-            shouldChangeAlgorithm={shouldChangeAlgorithm}
-            currentAlgorithm={currentAlgorithm}
-            recommendedAlgorithm={recommendedAlgorithm}
-            urgentCount={urgentCount}
-            elderlyCount={elderlyCount}
-            waitingQueueCount={waitingQueues.length}
-            handleChangeAlgorithm={handleChangeAlgorithm}
-          />
+          <SettingsProvider>
+            <AlgorithmRecommendation
+              shouldChangeAlgorithm={shouldChangeAlgorithm}
+              currentAlgorithm={currentAlgorithm}
+              recommendedAlgorithm={recommendedAlgorithm}
+              urgentCount={urgentCount}
+              elderlyCount={elderlyCount}
+              waitingQueueCount={waitingQueues.length}
+              handleChangeAlgorithm={handleChangeAlgorithm}
+            />
+          </SettingsProvider>
         )}
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>เวลารอเฉลี่ย</CardTitle>
-              <TabSelector timeFrame={timeFrame} setTimeFrame={setTimeFrame} />
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <Card className="w-full">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-lg">เวลารอเฉลี่ย</CardTitle>
+                <TabSelector
+                  timeFrame={timeFrame}
+                  setTimeFrame={setTimeFrame}
+                />
+              </div>
             </CardHeader>
-            <CardContent>
-              <WaitTimeChart data={waitTimeData} timeFrame={timeFrame} />
+            <CardContent className="pt-0">
+              <WaitTimeChart data={combinedWaitTimeData} timeFrame={timeFrame} />
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>ปริมาณผู้มารับบริการ</CardTitle>
-              <TabSelector timeFrame={timeFrame} setTimeFrame={setTimeFrame} />
+
+          <Card className="w-full">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-lg">ปริมาณผู้มารับบริการ</CardTitle>
+                <TabSelector
+                  timeFrame={timeFrame}
+                  setTimeFrame={setTimeFrame}
+                />
+              </div>
             </CardHeader>
-            <CardContent>
-              <ThroughputChart data={throughputData} timeFrame={timeFrame} />
+            <CardContent className="pt-0">
+              <ThroughputChart data={combinedThroughputData} timeFrame={timeFrame} />
             </CardContent>
           </Card>
         </div>
-        
-        <Tabs defaultValue="composition" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>ลักษณะของคิว</CardTitle>
-            </CardHeader>
-            <CardContent>
+
+        <Card className="w-full">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">ลักษณะของคิว</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              การกระจายตัวของประเภทคิวที่รออยู่ในปัจจุบัน
+            </p>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Tabs defaultValue="composition" className="w-full">
               <TabsContent value="composition" className="mt-0">
-                <QueueCompositionChart waitingQueues={waitingQueues} />
+                <QueueCompositionChart 
+                  waitingQueues={waitingQueues}
+                  waitingInsQueues={waitingInsQueues}
+                />
               </TabsContent>
-            </CardContent>
-          </Card>
-        </Tabs>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </DirectionProvider>
   );

@@ -1,8 +1,11 @@
+import { Patient } from "@/integrations/supabase/schema";
 
-import { Patient } from '@/integrations/supabase/schema';
+export type SearchType = "phone" | "id_card";
 
 export interface PatientSearchState {
   phoneNumber: string;
+  idCardNumber: string;
+  searchType: SearchType;
   isSearching: boolean;
   matchedPatients: Patient[];
   showNewPatientForm: boolean;
@@ -10,8 +13,11 @@ export interface PatientSearchState {
 
 export interface PatientSearchActions {
   setPhoneNumber: (value: string) => void;
+  setIdCardNumber: (value: string) => void;
+  setSearchType: (value: SearchType) => void;
   setShowNewPatientForm: (value: boolean) => void;
-  handlePhoneSearch: () => Promise<Patient[]>;
+  handleSearch: () => Promise<Patient[]>;
+  handlePhoneSearch: () => Promise<Patient[]>; // For backward compatibility
   resetPatientSearch: () => void;
 }
 

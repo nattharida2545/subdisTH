@@ -1,9 +1,8 @@
-
-import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Queue } from '@/integrations/supabase/schema';
-import QueueTimeInfo from './QueueTimeInfo';
-import { QueueCardActions, QueueCardInfo } from './card';
+import React from "react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Patient, Queue } from "@/integrations/supabase/schema";
+import QueueTimeInfo from "./QueueTimeInfo";
+import { QueueCardActions, QueueCardInfo } from "./card";
 
 interface QueueCardProps {
   queue: Queue;
@@ -15,6 +14,7 @@ interface QueueCardProps {
   onTransfer?: () => void;
   onReturnToWaiting?: () => void;
   onHold?: () => void;
+  onPaused?: () => void;
   onViewPatientInfo?: () => void;
   onCancel?: () => void;
   servicePointId?: string;
@@ -22,6 +22,7 @@ interface QueueCardProps {
   suggestedServicePointName?: string;
   showServicePointInfo?: boolean;
   isPharmacyInterface?: boolean;
+  patientData?: Patient;
 }
 
 const QueueCard: React.FC<QueueCardProps> = ({
@@ -34,15 +35,27 @@ const QueueCard: React.FC<QueueCardProps> = ({
   onTransfer,
   onReturnToWaiting,
   onHold,
+  onPaused,
   onViewPatientInfo,
   onCancel,
   servicePointName,
   suggestedServicePointName,
   showServicePointInfo = false,
-  isPharmacyInterface = false
+  isPharmacyInterface = false,
+  patientData,
 }) => {
-  const hasActions = onComplete || onSkip || onCall || onRecall || onTransfer || onReturnToWaiting || onHold || onViewPatientInfo || onCancel;
-  
+  const hasActions =
+    onComplete ||
+    onSkip ||
+    onCall ||
+    onRecall ||
+    onTransfer ||
+    onReturnToWaiting ||
+    onHold ||
+    onViewPatientInfo ||
+    onCancel ||
+    onPaused;
+
   return (
     <Card className={isPharmacyInterface ? "border-pharmacy-200" : ""}>
       <CardContent className="p-4">
@@ -50,20 +63,23 @@ const QueueCard: React.FC<QueueCardProps> = ({
           <QueueCardInfo
             queue={queue}
             patientName={patientName}
+            patient={patientData}
             servicePointName={servicePointName}
             suggestedServicePointName={suggestedServicePointName}
-            showServicePointInfo={true} // Always show service point info in pharmacy interface
+            showServicePointInfo={showServicePointInfo} // Always show service point info in pharmacy interface
           />
-          
+
           <QueueTimeInfo queue={queue} />
         </div>
       </CardContent>
-      
+
       {/* Show actions if any handlers are provided */}
       {hasActions && (
-        <CardFooter className={`px-4 py-3 flex justify-end gap-2 flex-wrap ${
-          isPharmacyInterface ? "bg-pharmacy-50" : "bg-gray-50"
-        }`}>
+        <CardFooter
+          className={`px-4 py-3 flex justify-end gap-2 flex-wrap ${
+            isPharmacyInterface ? "bg-pharmacy-50" : "bg-gray-50"
+          }`}
+        >
           <QueueCardActions
             queue={queue}
             onComplete={onComplete}
@@ -73,6 +89,7 @@ const QueueCard: React.FC<QueueCardProps> = ({
             onTransfer={onTransfer}
             onReturnToWaiting={onReturnToWaiting}
             onHold={onHold}
+            onPaused={onPaused}
             onViewPatientInfo={onViewPatientInfo}
             onCancel={onCancel}
             isPharmacyInterface={isPharmacyInterface}

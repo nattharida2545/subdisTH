@@ -5,7 +5,7 @@ import { th } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { TimeFrame } from './useTimeFrameState';
 
-export const useThroughputData = (timeFrame: TimeFrame) => {
+export const useThroughputData = (timeFrame: TimeFrame, refreshTrigger?: number) => {
   // Always define state hooks first
   const [throughputData, setThroughputData] = React.useState<any[]>([]);
   
@@ -91,7 +91,7 @@ export const useThroughputData = (timeFrame: TimeFrame) => {
     } catch (error) {
       console.error('Error in fetchThroughputData:', error);
     }
-  }, [timeFrame]);
+  }, [timeFrame, refreshTrigger]);
   
   // useEffect should always be at the end of the hook
   React.useEffect(() => {

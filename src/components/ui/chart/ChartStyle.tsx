@@ -10,8 +10,37 @@ export const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) 
     ([_, config]) => config.theme || config.color
   )
 
+  // Default chart colors if no config provided
+  const defaultColors = {
+    1: "hsl(12 76% 61%)",
+    2: "hsl(173 58% 39%)", 
+    3: "hsl(197 37% 24%)",
+    4: "hsl(43 74% 66%)",
+    5: "hsl(27 87% 67%)",
+  }
+
   if (!colorConfig.length) {
-    return null
+    return (
+      <style
+        dangerouslySetInnerHTML={{
+          __html: Object.entries(THEMES)
+            .map(
+              ([theme, prefix]) => `
+${prefix} [data-chart=${id}] {
+  --color-waitTime: ${defaultColors[1]};
+  --color-count: ${defaultColors[2]};
+  --chart-1: ${defaultColors[1]};
+  --chart-2: ${defaultColors[2]};
+  --chart-3: ${defaultColors[3]};
+  --chart-4: ${defaultColors[4]};
+  --chart-5: ${defaultColors[5]};
+}
+`
+            )
+            .join("\n"),
+        }}
+      />
+    )
   }
 
   return (
@@ -29,6 +58,11 @@ ${colorConfig
     return color ? `  --color-${key}: ${color};` : null
   })
   .join("\n")}
+  --chart-1: ${defaultColors[1]};
+  --chart-2: ${defaultColors[2]};
+  --chart-3: ${defaultColors[3]};
+  --chart-4: ${defaultColors[4]};
+  --chart-5: ${defaultColors[5]};
 }
 `
           )

@@ -1,12 +1,12 @@
-
-import React from 'react';
-import { usePatientPortalState } from '@/hooks/patient-portal/usePatientPortalState';
-import { usePatientPortalActions } from '@/hooks/patient-portal/usePatientPortalActions';
-import PatientPortalLoading from '@/components/patient-portal/PatientPortalLoading';
-import PatientPortalAuth from '@/components/patient-portal/PatientPortalAuth';
-import ActiveQueueView from '@/components/patient-portal/ActiveQueueView';
-import PatientSelectionView from '@/components/patient-portal/PatientSelectionView';
-import PatientQueueSelector from '@/components/patient-portal/PatientQueueSelector';
+import React from "react";
+import { usePatientPortalState } from "@/hooks/patient-portal/usePatientPortalState";
+import { usePatientPortalActions } from "@/hooks/patient-portal/usePatientPortalActions";
+import PatientPortalLoading from "@/components/patient-portal/PatientPortalLoading";
+import PatientPortalAuth from "@/components/patient-portal/PatientPortalAuth";
+import ActiveQueueView from "@/components/patient-portal/ActiveQueueView";
+import ActiveQueueInsView from "@/components/patient-portal/ActiveQueueInsView";
+import PatientSelectionView from "@/components/patient-portal/PatientSelectionView";
+import PatientQueueSelector from "@/components/patient-portal/PatientQueueSelector";
 
 const PatientPortalContainer: React.FC = () => {
   const {
@@ -15,17 +15,21 @@ const PatientPortalContainer: React.FC = () => {
     selectedPatient,
     patients,
     activeQueue,
+    activeQueueIns,
     availableQueues,
+    availableQueuesIns,
     phoneNumber,
     isStaffMode,
     setIsAuthenticated,
     setSelectedPatient,
     setPatients,
     setActiveQueue,
+    setActiveQueueIns,
     setAvailableQueues,
+    setAvailableQueuesIns,
     setPhoneNumber,
     setIsStaffMode,
-    checkForActiveQueues
+    checkForActiveQueues,
   } = usePatientPortalState();
 
   const {
@@ -36,7 +40,7 @@ const PatientPortalContainer: React.FC = () => {
     handleSwitchPatient,
     handleSwitchQueue,
     handleSelectQueue,
-    handleClearQueueHistory
+    handleClearQueueHistory,
   } = usePatientPortalActions({
     patients,
     setSelectedPatient,
@@ -46,10 +50,10 @@ const PatientPortalContainer: React.FC = () => {
     setIsStaffMode,
     setPhoneNumber,
     setPatients,
-    checkForActiveQueues
+    checkForActiveQueues,
   });
 
-  console.log('[PatientPortalContainer] Current state:', {
+  console.log("[PatientPortalContainer] Current state:", {
     isAuthenticated,
     loading,
     selectedPatient: selectedPatient?.name,
@@ -57,7 +61,7 @@ const PatientPortalContainer: React.FC = () => {
     activeQueue: activeQueue?.id,
     availableQueuesCount: availableQueues.length,
     phoneNumber,
-    isStaffMode
+    isStaffMode,
   });
 
   if (loading) {
@@ -65,10 +69,12 @@ const PatientPortalContainer: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    console.log('[PatientPortalContainer] Not authenticated, showing auth page');
+    console.log(
+      "[PatientPortalContainer] Not authenticated, showing auth page"
+    );
     return (
-      <PatientPortalAuth 
-        onLoginSuccess={handleLineLoginSuccess} 
+      <PatientPortalAuth
+        onLoginSuccess={handleLineLoginSuccess}
         onPatientSelect={handlePatientFound}
       />
     );
@@ -76,7 +82,9 @@ const PatientPortalContainer: React.FC = () => {
 
   // Show queue selector when multiple queues are available but none selected
   if (availableQueues.length > 1 && !activeQueue && selectedPatient) {
-    console.log('[PatientPortalContainer] Multiple queues available, showing selector');
+    console.log(
+      "[PatientPortalContainer] Multiple queues available, showing selector"
+    );
     return (
       <PatientQueueSelector
         queues={availableQueues}
@@ -87,9 +95,31 @@ const PatientPortalContainer: React.FC = () => {
     );
   }
 
-  // Show active queue view when a queue is selected
+  console.log("activeQueueIns", activeQueueIns);
+  console.log("selectedPatient", selectedPatient);
+
+  // Show INS queue view when an INS queue is selected
+  if (activeQueueIns && selectedPatient) {
+    console.log(
+      "[PatientPortalContainer] Active INS queue found, showing INS queue view"
+    );
+    return (
+      <ActiveQueueInsView
+        patient={selectedPatient}
+        queueIns={activeQueueIns}
+        patients={patients}
+        onLogout={handleLogout}
+        onSwitchPatient={handleSwitchPatient}
+        onClearQueueHistory={() => handleClearQueueHistory(selectedPatient)}
+      />
+    );
+  }
+
+  // Show regular queue view when a queue is selected
   if (activeQueue && selectedPatient) {
-    console.log('[PatientPortalContainer] Active queue found, showing queue view');
+    console.log(
+      "[PatientPortalContainer] Active queue found, showing queue view"
+    );
     return (
       <ActiveQueueView
         patient={selectedPatient}
@@ -98,21 +128,25 @@ const PatientPortalContainer: React.FC = () => {
         availableQueues={availableQueues}
         onLogout={handleLogout}
         onSwitchPatient={handleSwitchPatient}
-        onSwitchQueue={availableQueues.length > 1 ? handleSwitchQueue : undefined}
+        onSwitchQueue={
+          availableQueues.length > 1 ? handleSwitchQueue : undefined
+        }
         onClearQueueHistory={() => handleClearQueueHistory(selectedPatient)}
       />
     );
   }
 
   // Show patient selection view - this is now the main view for multi-patient management
-  console.log('[PatientPortalContainer] Showing patient selection view');
+  console.log("[PatientPortalContainer] Showing patient selection view");
   return (
     <PatientSelectionView
       patients={patients}
       selectedPatient={selectedPatient}
       onSelectPatient={handlePatientSelect}
       onLogout={handleLogout}
-      onClearQueueHistory={() => selectedPatient && handleClearQueueHistory(selectedPatient)}
+      onClearQueueHistory={() =>
+        selectedPatient && handleClearQueueHistory(selectedPatient)
+      }
     />
   );
 };

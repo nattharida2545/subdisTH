@@ -1,13 +1,13 @@
-
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import { useServicePoints } from '@/hooks/useServicePoints';
-import { useQueues } from '@/hooks/useQueues';
-import { usePatients } from '@/hooks/usePatients';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import QueueList from '@/components/queue/QueueList';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React from "react";
+import { useParams } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import { useServicePoints } from "@/hooks/useServicePoints";
+import { useQueues } from "@/hooks/useQueues";
+import { usePatients } from "@/hooks/usePatients";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import QueueList from "@/components/queue/QueueList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Patient } from "@/integrations/supabase/schema";
 
 const ServicePointQueue = () => {
   const { servicePointId } = useParams<{ servicePointId: string }>();
@@ -16,19 +16,30 @@ const ServicePointQueue = () => {
   const { patients } = usePatients();
 
   // Find the service point
-  const servicePoint = servicePoints.find(sp => sp.id === servicePointId);
+  const servicePoint = servicePoints.find((sp) => sp.id === servicePointId);
 
   // Filter queues for this specific service point
-  const servicePointQueues = queues.filter(q => q.service_point_id === servicePointId);
-  
-  const waitingQueues = servicePointQueues.filter(q => q.status === 'WAITING');
-  const activeQueues = servicePointQueues.filter(q => q.status === 'ACTIVE');
-  const completedQueues = servicePointQueues.filter(q => q.status === 'COMPLETED');
+  const servicePointQueues = queues.filter(
+    (q) => q.service_point_id === servicePointId
+  );
+
+  const waitingQueues = servicePointQueues.filter(
+    (q) => q.status === "WAITING"
+  );
+  const activeQueues = servicePointQueues.filter((q) => q.status === "ACTIVE");
+  const completedQueues = servicePointQueues.filter(
+    (q) => q.status === "COMPLETED"
+  );
 
   // Get patient name by ID
   const getPatientName = (patientId: string) => {
-    const patient = patients.find(p => p.id === patientId);
-    return patient ? patient.name : 'Unknown';
+    const patient = patients.find((p) => p.id === patientId);
+    return patient ? patient.name : "Unknown";
+  };
+
+  const getPatientById = (id: string): Patient => {
+    const patient = patients.find((p) => p.id === id);
+    return patient;
   };
 
   if (!servicePoint) {
@@ -49,28 +60,36 @@ const ServicePointQueue = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span>{servicePoint.name}</span>
-                <span className="text-sm text-gray-500">({servicePoint.code})</span>
+                <span className="text-sm text-gray-500">
+                  ({servicePoint.code})
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-2xl font-bold text-orange-600">{waitingQueues.length}</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {waitingQueues.length}
+                  </p>
                   <p className="text-sm text-gray-500">รอดำเนินการ</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-green-600">{activeQueues.length}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {activeQueues.length}
+                  </p>
                   <p className="text-sm text-gray-500">กำลังให้บริการ</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-600">{completedQueues.length}</p>
+                  <p className="text-2xl font-bold text-gray-600">
+                    {completedQueues.length}
+                  </p>
                   <p className="text-sm text-gray-500">เสร็จสิ้น</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue="waiting" className="h-full flex flex-col">
             <div className="border-b px-2">
@@ -101,12 +120,13 @@ const ServicePointQueue = () => {
                 </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <div className="flex-1 overflow-auto p-2">
               <TabsContent value="waiting" className="mt-0 h-full">
                 <Card className="h-full overflow-auto border-0 shadow-none">
                   <QueueList
                     queues={waitingQueues}
+                    getPatientById={getPatientById}
                     getPatientName={getPatientName}
                     onUpdateStatus={updateQueueStatus}
                     status="WAITING"
@@ -114,11 +134,12 @@ const ServicePointQueue = () => {
                   />
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="active" className="mt-0 h-full">
                 <Card className="h-full overflow-auto border-0 shadow-none">
                   <QueueList
                     queues={activeQueues}
+                    getPatientById={getPatientById}
                     getPatientName={getPatientName}
                     onUpdateStatus={updateQueueStatus}
                     onRecallQueue={recallQueue}
@@ -127,10 +148,11 @@ const ServicePointQueue = () => {
                   />
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="completed" className="mt-0 h-full">
                 <Card className="h-full overflow-auto border-0 shadow-none">
                   <QueueList
+                    getPatientById={getPatientById}
                     queues={completedQueues}
                     getPatientName={getPatientName}
                     status="COMPLETED"

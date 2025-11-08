@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -8,31 +8,72 @@ import {
 } from '@/components/ui/chart';
 
 interface ThroughputChartProps {
-  data: Array<{ time: string; count: number }>;
+  data: Array<{ time: string; count: number; insCount?: number }>;
   timeFrame: 'day' | 'week' | 'month';
 }
 
+const chartConfig = {
+  count: {
+    label: "คิวรับยา",
+    color: "hsl(217, 91%, 60%)",
+  },
+  insCount: {
+    label: "คิวตรวจ",
+    color: "hsl(271, 91%, 65%)",
+  },
+}
+
 const ThroughputChart: React.FC<ThroughputChartProps> = ({ data, timeFrame }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+        ไม่มีข้อมูลผู้รับบริการในช่วงเวลานี้
+      </div>
+    );
+  }
+
   return (
-    <div className="h-80">
-      <ChartContainer config={{}}>
+    <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
           <XAxis 
             dataKey="time" 
-            label={{ value: timeFrame === 'day' ? 'เวลา' : 'วันที่', position: 'insideBottom', offset: -5 }} 
+            tick={{ fontSize: 12 }}
+            tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
           />
-          <YAxis label={{ value: 'จำนวนผู้รับบริการ', angle: -90, position: 'insideLeft' }} />
-          <ChartTooltip content={<ChartTooltipContent labelFormatter={(value) => `เวลา: ${value}`} />} />
-          <Legend />
-          <Bar dataKey="count" name="จำนวนผู้รับบริการ" fill="#10b981" barSize={30} />
+          <YAxis 
+            tick={{ fontSize: 12 }}
+            tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
+            label={{ value: 'คน', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+          />
+          <ChartTooltip 
+            content={<ChartTooltipContent 
+              labelFormatter={(value) => `เวลา: ${value}`}
+            />} 
+          />
+          <Legend 
+            wrapperStyle={{ paddingTop: '10px' }}
+          />
+          <Bar 
+            dataKey="count" 
+            name={chartConfig.count.label}
+            fill={chartConfig.count.color}
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar 
+            dataKey="insCount" 
+            name={chartConfig.insCount.label}
+            fill={chartConfig.insCount.color}
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
-      </ChartContainer>
-    </div>
+      </ResponsiveContainer>
+    </ChartContainer>
   );
-};
+}
 
 export default ThroughputChart;

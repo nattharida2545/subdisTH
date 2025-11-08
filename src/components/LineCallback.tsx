@@ -1,9 +1,8 @@
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { lineService } from '@/services/line.service';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { lineService } from "@/services/line.service";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define interface for LINE profile
 interface LineProfile {
@@ -24,90 +23,104 @@ const LineCallback: React.FC = () => {
       try {
         // Parse URL parameters
         const params = new URLSearchParams(location.search);
-        const code = params.get('code');
-        const state = params.get('state');
-        const error = params.get('error');
-        const errorDescription = params.get('error_description');
+        const code = params.get("code");
+        const state = params.get("state");
+        const error = params.get("error");
+        const errorDescription = params.get("error_description");
 
         // Check for errors from LINE
         if (error) {
-          throw new Error(errorDescription || 'LINE login failed');
+          throw new Error(errorDescription || "LINE login failed");
         }
 
         // Validate state to prevent CSRF
-        const savedState = localStorage.getItem('lineLoginState');
-        if (!state || state !== savedState) {
-          throw new Error('Invalid state parameter');
+        // Check in both localStorage and sessionStorage since different components use different storage methods
+        const savedStateLocal = localStorage.getItem("lineLoginState");
+        const savedStateSession = sessionStorage.getItem("lineLoginState");
+
+        if (
+          !state ||
+          (state !== savedStateLocal && state !== savedStateSession)
+        ) {
+          console.error("State validation failed:", {
+            receivedState: state,
+            savedStateLocal,
+            savedStateSession,
+          });
+          throw new Error("Invalid state parameter");
         }
 
         // Validate code
         if (!code) {
-          throw new Error('No authorization code received');
+          throw new Error("No authorization code received");
         }
 
-        console.log('Processing LINE callback with code:', code);
+        console.log("Processing LINE callback with code:", code);
 
         // Exchange code for token and get profile
         const tokenResponse = await lineService.exchangeToken(code);
-        
+
         // Store token
-        localStorage.setItem('lineToken', tokenResponse.access_token);
-        
+        localStorage.setItem("lineToken", tokenResponse.access_token);
+
         // Extract and store profile information
         let lineProfile: LineProfile;
         if (tokenResponse.profile) {
           lineProfile = tokenResponse.profile;
         } else {
           // If no profile in the token response, try to fetch it separately
-          lineProfile = await lineService.getProfile(tokenResponse.access_token);
+          lineProfile = await lineService.getProfile(
+            tokenResponse.access_token
+          );
         }
-        
-        console.log('LINE Profile Information:', lineProfile);
-        
+
+        console.log("LINE Profile Information:", lineProfile);
+
         // Store all profile information in localStorage
-        localStorage.setItem('lineProfile', JSON.stringify(lineProfile));
-        localStorage.setItem('lineUserId', lineProfile.userId);
-        
+        localStorage.setItem("lineProfile", JSON.stringify(lineProfile));
+        localStorage.setItem("lineUserId", lineProfile.userId);
+
         // Try to find existing patient with this LINE user ID
         const { data: existingPatient, error: findError } = await supabase
-          .from('patients')
-          .select('*')
-          .eq('line_user_id', lineProfile.userId)
+          .from("patients")
+          .select("*")
+          .eq("line_user_id", lineProfile.userId)
           .single();
 
-        if (findError && findError.code !== 'PGRST116') {
-          console.error('Error finding patient:', findError);
+        if (findError && findError.code !== "PGRST116") {
+          console.error("Error finding patient:", findError);
         }
 
         if (existingPatient) {
           // Patient already exists with this LINE account
-          console.log('Found existing patient:', existingPatient);
-          
+          console.log("Found existing patient:", existingPatient);
+
           // Store user phone and navigate to patient portal
-          localStorage.setItem('userPhone', existingPatient.phone);
-          localStorage.setItem('lineToken', tokenResponse.access_token);
-          
-          toast.success('เข้าสู่ระบบสำเร็จ');
-          navigate('/patient-portal');
+          localStorage.setItem("userPhone", existingPatient.ID_card);
+          localStorage.setItem("lineToken", tokenResponse.access_token);
+
+          toast.success("เข้าสู่ระบบสำเร็จ");
+          navigate("/patient-portal");
         } else {
           // No existing patient found, need to connect phone number
-          navigate('/patient-portal/connect-phone', { 
-            state: { 
+          navigate("/patient-portal/connect-phone", {
+            state: {
               lineLoginSuccess: true,
               lineUserId: lineProfile.userId,
               displayName: lineProfile.displayName,
               pictureUrl: lineProfile.pictureUrl,
-              statusMessage: lineProfile.statusMessage
-            }
+              statusMessage: lineProfile.statusMessage,
+            },
           });
         }
-        
-        // Clean up
-        localStorage.removeItem('lineLoginState');
+
+        // Clean up - remove state from both storage locations
+        localStorage.removeItem("lineLoginState");
+        sessionStorage.removeItem("lineLoginState");
       } catch (err) {
-        console.error('LINE callback error:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-        toast.error('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+        console.error("LINE callback error:", err);
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        toast.error("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
       } finally {
         setLoading(false);
       }
@@ -131,8 +144,8 @@ const LineCallback: React.FC = () => {
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <p>เกิดข้อผิดพลาด: {error}</p>
         </div>
-        <button 
-          onClick={() => navigate('/patient-portal')}
+        <button
+          onClick={() => navigate("/patient-portal")}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           กลับสู่หน้าเข้าสู่ระบบ

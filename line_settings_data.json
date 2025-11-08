@@ -1,0 +1,23 @@
+[
+  {
+    "id": "616b080a-e5be-4dd5-8d7c-6ac605e455cd",
+    "channel_id": "2007119652",
+    "channel_secret": "06c5c8cd9ef5c62e7ec68b17ff51cffd",
+    "access_token": "k0GIOBj7Cxn8TYbBobb4hF3+n9QjEIzeHFKNr4EdjTSYCUqHP+7FstCU9tDQWY25AEJNo5EZTgDYHGltQ9wMAoJBAzDCa5LLTKy1yfH5/kA2OLcvKTwjpl/zX4SPQhEcjwqnwKVJ4XXzoeZSLhto7QdB04t89/1O/w1cDnyilFU=",
+    "welcome_message": "ยินดีต้อนรับสู่ระบบคิวห้องยา โรงพยาบาลชุมชนตัวอย่าง",
+    "queue_received_message": "คุณได้รับคิวหมายเลข {queueNumber} ประเภท: {queueType}\\nระยะเวลารอโดยประมาณ: {estimatedWaitTime} นาที",
+    "queue_called_message": "เรียนคุณ {patientName}\\nถึงคิวของคุณแล้ว! กรุณามาที่ช่องบริการ {counter}\\nหมายเลขคิวของคุณคือ: {queueNumber}",
+    "tts_config": {
+      "rate": 1,
+      "volume": 1,
+      "enabled": true,
+      "language": "th-TH"
+    },
+    "created_at": "2025-04-09T13:59:05.967527+00:00",
+    "updated_at": "2025-06-05T14:50:35.709105+00:00",
+    "login_channel_id": "2007360763",
+    "login_channel_secret": "6c7106913d0f20c7e2ec0c175152d662",
+    "callback_url": "https://subdis-th-que.netlify.app/auth/line/callback",
+    "liff_id": "2007360763-ln8EN4Mn"
+  }
+]

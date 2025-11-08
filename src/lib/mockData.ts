@@ -2,7 +2,8 @@ export enum QueueType {
   GENERAL = 'GENERAL',
   PRIORITY = 'PRIORITY',
   ELDERLY = 'ELDERLY',
-  FOLLOW_UP = 'FOLLOW_UP'
+  URGENT = 'URGENT',
+  APPOINTMENT = 'APPOINTMENT'
 }
 
 export enum QueueStatus {
@@ -81,7 +82,7 @@ export const mockQueues: Queue[] = [
     id: "Q005",
     number: 5,
     patientId: "P005",
-    type: QueueType.FOLLOW_UP,
+    type: QueueType.APPOINTMENT,
     status: QueueStatus.WAITING,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -126,7 +127,7 @@ export const mockQueues: Queue[] = [
     id: "Q010",
     number: 10,
     patientId: "P010",
-    type: QueueType.FOLLOW_UP,
+    type: QueueType.APPOINTMENT,
     status: QueueStatus.WAITING,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -171,7 +172,7 @@ export const mockQueues: Queue[] = [
     id: "Q015",
     number: 15,
     patientId: "P005",
-    type: QueueType.FOLLOW_UP,
+    type: QueueType.APPOINTMENT,
     status: QueueStatus.SKIPPED,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

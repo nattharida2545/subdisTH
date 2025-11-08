@@ -1,19 +1,19 @@
-
-import * as React from 'react';
-import { Form } from '@/components/ui/form';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Medication } from '@/integrations/supabase/schema';
-import { useMedicationForm } from '../hooks/useMedicationForm';
-import { useUnitOptions } from '@/hooks/useUnitOptions';
-import { MedicationFormValues } from '../schemas/medicationSchema';
-import { 
-  CodeField, 
-  NameField, 
-  DescriptionField, 
-  UnitField, 
-  StockFields 
-} from '../form-fields';
+import * as React from "react";
+import { Form } from "@/components/ui/form";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Medication } from "@/integrations/supabase/schema";
+import { useMedicationForm } from "../hooks/useMedicationForm";
+import { useUnitOptions } from "@/hooks/useUnitOptions";
+import { MedicationFormValues } from "../schemas/medicationSchema";
+import {
+  CodeField,
+  NameField,
+  DescriptionField,
+  UnitField,
+  StockFields,
+  ImageField,
+} from "../form-fields";
 
 export interface MedicationsDialogFormProps {
   medication: Medication | null;
@@ -32,7 +32,7 @@ const MedicationsDialogForm: React.FC<MedicationsDialogFormProps> = ({
   open,
   onOpenChange,
   addMedication,
-  updateMedication
+  updateMedication,
 }) => {
   const { unitOptions, handleAddNewUnit } = useUnitOptions(medications);
 
@@ -45,11 +45,15 @@ const MedicationsDialogForm: React.FC<MedicationsDialogFormProps> = ({
       }
       onOpenChange(false);
     } catch (error) {
-      console.error('Error saving medication:', error);
+      console.error("Error saving medication:", error);
     }
   };
 
-  const { form, submitHandler } = useMedicationForm(medication, handleSubmit, open);
+  const { form, submitHandler } = useMedicationForm(
+    medication,
+    handleSubmit,
+    open
+  );
 
   const handleCancel = () => {
     onOpenChange(false);
@@ -61,12 +65,13 @@ const MedicationsDialogForm: React.FC<MedicationsDialogFormProps> = ({
         <CodeField control={form.control} />
         <NameField control={form.control} />
         <DescriptionField control={form.control} />
-        <UnitField 
+        <UnitField
           control={form.control}
           unitOptions={unitOptions}
           onAddNewUnit={handleAddNewUnit}
         />
         <StockFields control={form.control} />
+        <ImageField control={form.control} />
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleCancel}>
             ยกเลิก

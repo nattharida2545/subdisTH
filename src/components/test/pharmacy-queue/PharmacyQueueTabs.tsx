@@ -1,9 +1,11 @@
-
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { usePharmacyQueueData } from './usePharmacyQueueData';
-import PharmacyQueueTabContent from './components/PharmacyQueueTabContent';
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { usePharmacyQueueData } from "./usePharmacyQueueData";
+import PharmacyQueueTabContent from "./components/PharmacyQueueTabContent";
+import { Patient } from "@/integrations/supabase/schema";
+import PatientInfoDialog from "@/components/pharmacy/PatientInfoDialog";
+import QueueTransferDialog from "./QueueTransferDialog";
 
 interface PharmacyQueueTabsProps {
   servicePointId?: string;
@@ -11,8 +13,8 @@ interface PharmacyQueueTabsProps {
 }
 
 const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
-  servicePointId = '',
-  refreshTrigger
+  servicePointId = "",
+  refreshTrigger,
 }) => {
   const {
     queuesByStatus,
@@ -23,18 +25,54 @@ const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
     handleHoldQueue,
     handleTransferQueue,
     handleReturnToWaiting,
-    handleCancelQueue
-  } = usePharmacyQueueData({ 
-    servicePointId: servicePointId || '', 
-    refreshTrigger 
+    handleCancelQueue,
+    getPatientData,
+    selectedServicePoint,
+    servicePoints,
+  } = usePharmacyQueueData({
+    servicePointId: servicePointId || "",
+    refreshTrigger,
   });
+  // Patient info dialog state
+  const [patientInfoOpen, setPatientInfoOpen] = React.useState(false);
+  const [selectedPatient, setSelectedPatient] = React.useState<Patient | null>(
+    null
+  );
+  const [selectedQueueId, setSelectedQueueId] = React.useState<string | null>(
+    null
+  );
+  const [selectedQueueNumber, setSelectedQueueNumber] = React.useState<string>("");
 
-  const handleViewPatientInfo = (queue: any) => {
-    console.log('View patient info for queue:', queue);
+  const [transferDialogOpen, setTransferDialogOpen] = React.useState(false);
+  const [transferQueueId, setTransferQueueId] = React.useState<string | null>(
+    null
+  );
+
+  const handleViewPatientInfo = (queue: any, _type_tabe: string) => {
+    const patient = getPatientData(queue.patient_id);
+    if (patient) {
+      setSelectedPatient(patient);
+      setSelectedQueueId(queue.id);
+      setSelectedQueueNumber(queue.number ? `${queue.type}${queue.number}` : "");
+      setPatientInfoOpen(true);
+    }
   };
 
   const handleTransferClick = (queueId: string) => {
-    console.log('Transfer queue:', queueId);
+    setTransferQueueId(queueId);
+    setTransferDialogOpen(true);
+  };
+
+  const handleConfirmTransfer = async (targetServicePointId: string) => {
+    if (!transferQueueId) return;
+    await handleTransferQueue(transferQueueId, targetServicePointId);
+    setTransferDialogOpen(false);
+    setTransferQueueId(null);
+  };
+
+  const getPatientById = (id: string): Patient => {
+    const patient = getPatientData(id);
+    return patient;
   };
 
   return (
@@ -83,9 +121,10 @@ const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           <PharmacyQueueTabContent
             value="waiting"
+            getPatientById={getPatientById}
             queues={queuesByStatus.waiting}
             emptyMessage="ไม่มีคิวที่รอดำเนินการ"
             getPatientName={getPatientName}
@@ -96,6 +135,7 @@ const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
 
           <PharmacyQueueTabContent
             value="active"
+            getPatientById={getPatientById}
             queues={queuesByStatus.active}
             emptyMessage="ไม่มีคิวที่กำลังให้บริการ"
             getPatientName={getPatientName}
@@ -108,16 +148,19 @@ const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
 
           <PharmacyQueueTabContent
             value="paused"
+            getPatientById={getPatientById}
             queues={queuesByStatus.paused}
             emptyMessage="ไม่มีคิวที่พัก"
             getPatientName={getPatientName}
             onViewPatientInfo={handleViewPatientInfo}
             onCallQueue={handleCallQueue}
             onReturnToWaiting={handleReturnToWaiting}
+            onUpdateStatus={handleUpdateStatus}
           />
 
           <PharmacyQueueTabContent
             value="skipped"
+            getPatientById={getPatientById}
             queues={queuesByStatus.skipped}
             emptyMessage="ไม่มีคิวที่ถูกข้าม"
             getPatientName={getPatientName}
@@ -128,6 +171,7 @@ const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
 
           <PharmacyQueueTabContent
             value="completed"
+            getPatientById={getPatientById}
             queues={queuesByStatus.completed}
             emptyMessage="ไม่มีคิวที่เสร็จสิ้น"
             getPatientName={getPatientName}
@@ -136,6 +180,22 @@ const PharmacyQueueTabs: React.FC<PharmacyQueueTabsProps> = ({
           />
         </div>
       </Tabs>
+      <PatientInfoDialog
+        open={patientInfoOpen}
+        onOpenChange={setPatientInfoOpen}
+        patient={selectedPatient}
+        queueId={selectedQueueId || undefined}
+        queueNumber={selectedQueueNumber}
+        mode="view"
+        showCheckNotes={false}
+      />
+      <QueueTransferDialog
+        open={transferDialogOpen}
+        onOpenChange={setTransferDialogOpen}
+        onTransfer={handleConfirmTransfer}
+        servicePoints={servicePoints}
+        currentServicePointId={selectedServicePoint?.id || ""}
+      />
     </div>
   );
 };

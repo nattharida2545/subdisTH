@@ -1,16 +1,16 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Pill, Info, Volume2, ArrowLeft } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
-import { th } from 'date-fns/locale';
-import { usePatientMedications } from '@/hooks/usePatientMedications';
-import { speakText } from '@/utils/textToSpeech';
-import { Patient } from '@/integrations/supabase/schema';
-import { useIsMobile } from '@/hooks/use-mobile';
-import SelectedPatientInfo from './SelectedPatientInfo';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Pill, Info, Volume2, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { th } from "date-fns/locale";
+import { usePatientMedications } from "@/hooks/usePatientMedications";
+import { speakText } from "@/utils/textToSpeech";
+import { Patient } from "@/integrations/supabase/schema";
+import { useIsMobile } from "@/hooks/use-mobile";
+import SelectedPatientInfo from "./SelectedPatientInfo";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface PatientMedicationsProps {
   patient: Patient;
@@ -20,44 +20,45 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
   const { medications, loading } = usePatientMedications(patient.id);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handleBack = () => {
-    window.location.href = '/patient-portal';
+    window.location.href = "/patient-portal";
   };
 
   const handleSpeak = async (med: any) => {
     try {
       setSpeakingId(med.id);
-      
+
       // Construct the text to speak in Thai
-      let textToSpeak = '';
-      
+      let textToSpeak = "";
+
       if (med.medication?.description) {
-        textToSpeak += med.medication.description + ' ';
+        textToSpeak += med.medication.description + " ";
       }
-      
+
       if (med.medication?.name) {
-        textToSpeak += med.medication.name + ' ';
+        textToSpeak += med.medication.name + " ";
       }
-      
+
       if (med.dosage) {
-        textToSpeak += med.dosage + ' ';
+        textToSpeak += med.dosage + " ";
       }
 
       if (med.medication?.unit) {
         textToSpeak += med.medication.unit;
       }
-      
+
       if (med.instructions) {
-        textToSpeak += med.instructions + ' ';
+        textToSpeak += med.instructions + " ";
       }
-      
+
       // Clean up extra spaces
       textToSpeak = textToSpeak.trim();
-      
+
       await speakText(textToSpeak);
     } catch (error) {
-      console.error('Error speaking medication:', error);
+      console.error("Error speaking medication:", error);
     } finally {
       setSpeakingId(null);
     }
@@ -112,16 +113,27 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
         <CardContent>
           <div className="space-y-4">
             {medications.map((med) => (
-              <div 
-                key={med.id} 
+              <div
+                key={med.id}
                 className="p-4 rounded-md border border-gray-200 hover:border-pharmacy-200 hover:bg-pharmacy-50 transition-colors"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-3">
+                  {med.medication?.image && (
+                    <img
+                      src={med.medication.image}
+                      alt={med.medication?.name || "Medication"}
+                      className="h-16 w-16 object-cover rounded-md border flex-shrink-0 cursor-zoom-in"
+                      loading="lazy"
+                      onClick={() =>
+                        setPreviewImage(med.medication!.image as string)
+                      }
+                    />
+                  )}
                   <div className="flex-1">
                     <h3 className="font-medium text-pharmacy-700">
                       {med.medication?.name}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">{med.dosage} {med.medication?.unit}</p>
+                    <p className="text-sm text-gray-600 mt-1">{med.dosage}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium px-2 py-1 rounded-full bg-pharmacy-100 text-pharmacy-700"></span>
@@ -132,11 +144,15 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
                       disabled={speakingId === med.id}
                       className="h-8 w-8 p-0"
                     >
-                      <Volume2 className={`h-4 w-4 ${speakingId === med.id ? 'animate-pulse' : ''}`} />
+                      <Volume2
+                        className={`h-4 w-4 ${
+                          speakingId === med.id ? "animate-pulse" : ""
+                        }`}
+                      />
                     </Button>
                   </div>
                 </div>
-                
+
                 {med.medication?.description && (
                   <p className="text-sm text-gray-500 mt-2">
                     {med.medication.description}
@@ -148,20 +164,37 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
                     {med.instructions}
                   </p>
                 )}
-                
+
                 <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
                   <span>
-                    เริ่ม: {format(new Date(med.start_date), 'PP', { locale: th })}
+                    เริ่ม:{" "}
+                    {format(new Date(med.start_date), "PP", { locale: th })}
                   </span>
                   {med.end_date && (
                     <span>
-                      สิ้นสุด: {format(new Date(med.end_date), 'PP', { locale: th })}
+                      สิ้นสุด:{" "}
+                      {format(new Date(med.end_date), "PP", { locale: th })}
                     </span>
                   )}
                 </div>
               </div>
             ))}
           </div>
+          {/* Image Lightbox */}
+          <Dialog
+            open={!!previewImage}
+            onOpenChange={(open) => !open && setPreviewImage(null)}
+          >
+            <DialogContent className="sm:max-w-2xl">
+              {previewImage && (
+                <img
+                  src={previewImage}
+                  alt="Medication preview"
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-md"
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     );
@@ -172,8 +205,8 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
       <div className="max-w-4xl mx-auto">
         {/* Header with back navigation */}
         <div className="flex items-center gap-3 mb-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size={isMobile ? "sm" : "default"}
             onClick={handleBack}
             className="flex items-center gap-2"
@@ -181,7 +214,11 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
             <ArrowLeft className="w-4 h-4" />
             {!isMobile && "กลับ"}
           </Button>
-          <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-pharmacy-700`}>
+          <h1
+            className={`${
+              isMobile ? "text-xl" : "text-2xl"
+            } font-bold text-pharmacy-700`}
+          >
             รายการยาของฉัน
           </h1>
         </div>
@@ -189,7 +226,7 @@ const PatientMedications: React.FC<PatientMedicationsProps> = ({ patient }) => {
         <div className="grid gap-4">
           {/* Patient Information Card */}
           <SelectedPatientInfo patient={patient} />
-          
+
           {/* Medications Content */}
           {renderMedicationContent()}
         </div>

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "9869ff95-1363-4b48-9c91-ffdc6079a111",
+    "code": "GENERAL",
+    "name": "ทั่วไป",
+    "prefix": "G",
+    "purpose": "สำหรับผู้ป่วยทั่วไป",
+    "format": "000",
+    "enabled": true,
+    "algorithm": "fifo",
+    "priority": 5,
+    "created_at": "2025-06-19T15:13:13.176485+00:00",
+    "updated_at": "2025-06-19T15:43:05.798649+00:00"
+  },
+  {
+    "id": "31a90b7f-35b4-40f0-b420-5fc853d0f719",
+    "code": "ELDERLY",
+    "name": "ผู้สูงอายุ",
+    "prefix": "E",
+    "purpose": "สำหรับผู้สูงอายุ",
+    "format": "00",
+    "enabled": true,
+    "algorithm": "fifo",
+    "priority": 5,
+    "created_at": "2025-06-19T15:43:42.388181+00:00",
+    "updated_at": "2025-06-19T15:43:42.388181+00:00"
+  },
+  {
+    "id": "d19e10bf-2351-4814-9e6d-9304af62533f",
+    "code": "URGENT",
+    "name": "ด่วน",
+    "prefix": "U",
+    "purpose": "สำหรับเหตุฉุกเฉิน เร่งด่วน",
+    "format": "0",
+    "enabled": true,
+    "algorithm": "priority",
+    "priority": 10,
+    "created_at": "2025-06-19T15:44:31.581819+00:00",
+    "updated_at": "2025-06-19T15:44:31.581819+00:00"
+  },
+  {
+    "id": "34f8bf6c-cc83-474c-ad7c-646a9683aba5",
+    "code": "APPOINTMENT",
+    "name": "นัดหมาย",
+    "prefix": "A",
+    "purpose": "สำหรับผู้ที่นัดหมายล่วงหน้า",
+    "format": "00",
+    "enabled": true,
+    "algorithm": "priority",
+    "priority": 8,
+    "created_at": "2025-06-19T15:45:32.088161+00:00",
+    "updated_at": "2025-06-19T15:45:32.088161+00:00"
+  }
+]

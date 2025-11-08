@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { LayoutGrid, Smartphone } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { LayoutGrid, Smartphone } from "lucide-react";
 
 const DashboardHeader: React.FC = () => {
   return (
@@ -11,19 +10,46 @@ const DashboardHeader: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">แดชบอร์ด</h1>
         <p className="text-gray-500">ระบบจัดการคิวห้องยา</p>
       </div>
-      
+
       <div className="flex items-center gap-2">
-        <Button variant="outline" className="text-pharmacy-600 border-pharmacy-200" asChild>
+        <Button
+          variant="outline"
+          className="text-pharmacy-600 border-pharmacy-200"
+          asChild
+        >
           <Link to="/patient-portal">
             <Smartphone className="w-4 h-4 mr-2" />
             ระบบสำหรับผู้ป่วย
           </Link>
         </Button>
-        
-        <Button className="bg-pharmacy-600 hover:bg-pharmacy-700 text-white" asChild>
+
+        <Button
+          className="bg-pharmacy-600 hover:bg-pharmacy-700 text-white"
+          asChild
+        >
           <Link to="/queue-board">
             <LayoutGrid className="w-4 h-4 mr-2" />
-            หน้าจอแสดงคิว
+            หน้าจอแสดงคิวรับยา
+          </Link>
+        </Button>
+
+        <Button
+          className="bg-pharmacy-600 hover:bg-pharmacy-700 text-white"
+          asChild
+        >
+          <Link to="/queue-board-ins">
+            <LayoutGrid className="w-4 h-4 mr-2" />
+            หน้าจอแสดงคิวตรวจ
+          </Link>
+        </Button>
+
+        <Button
+          className="bg-pharmacy-600 hover:bg-pharmacy-700 text-white"
+          asChild
+        >
+          <Link to="/combined-queue-board">
+            <LayoutGrid className="w-4 h-4 mr-2" />
+            หน้าจอแสดงคิวรวม
           </Link>
         </Button>
       </div>

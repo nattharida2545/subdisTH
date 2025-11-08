@@ -1,22 +1,30 @@
-
-import React from 'react';
-import { Form } from '@/components/ui/form';
-import { TabsContent } from '@/components/ui/tabs';
-import QueueSettings from './QueueSettings';
-import GeneralSettings from './GeneralSettings';
-import LineSettings from './LineSettings';
-import SmsSettings from './SmsSettings';
-import { useSettingsContext } from '@/contexts/SettingsContext';
-import SettingsFormActions from './SettingsFormActions';
-import ServicePointSettings from './ServicePointSettings';
-import ServicePointQueueTypeSettings from './ServicePointQueueTypeSettings';
-import { FormatOption } from './schemas';
+import React from "react";
+import { Form } from "@/components/ui/form";
+import { TabsContent } from "@/components/ui/tabs";
+import QueueSettings from "./QueueSettings";
+import GeneralSettings from "./GeneralSettings";
+import LineSettings from "./LineSettings";
+import SmsSettings from "./SmsSettings";
+import { useSettingsContext } from "@/contexts/SettingsContext";
+import SettingsFormActions from "./SettingsFormActions";
+import ServicePointSettings from "./ServicePointSettings";
+import ServicePointQueueTypeSettings from "./ServicePointQueueTypeSettings";
+import { FormatOption } from "./schemas";
+import ServicePointInsSetting from "./ServicePointInsSetting";
 
 // Define the format options
 const formatOptions: FormatOption[] = [
-  { value: '0', label: 'เลขเดี่ยว - เช่น 3, 12, 78', example: '1, 2, 3...' },
-  { value: '00', label: 'เลขสองหลัก - เช่น 01, 12, 99', example: '01, 02, 03...' },
-  { value: '000', label: 'เลขสามหลัก - เช่น 001, 012, 123', example: '001, 002, 003...' }
+  { value: "0", label: "เลขเดี่ยว - เช่น 3, 12, 78", example: "1, 2, 3..." },
+  {
+    value: "00",
+    label: "เลขสองหลัก - เช่น 01, 12, 99",
+    example: "01, 02, 03...",
+  },
+  {
+    value: "000",
+    label: "เลขสามหลัก - เช่น 001, 012, 123",
+    example: "001, 002, 003...",
+  },
 ];
 
 const SettingsForm: React.FC = () => {
@@ -31,16 +39,20 @@ const SettingsForm: React.FC = () => {
     <Form {...settings.form}>
       <TabsContent value="general" className="space-y-6">
         <GeneralSettings form={settings.form} />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ServicePointSettings />
           <ServicePointQueueTypeSettings />
+          <ServicePointInsSetting />
         </div>
       </TabsContent>
 
       <TabsContent value="queue" className="space-y-6">
-        <form onSubmit={settings.form.handleSubmit(onSubmit)} className="space-y-6">
-          <QueueSettings 
+        <form
+          onSubmit={settings.form.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          <QueueSettings
             form={settings.form}
             editingQueueType={settings.editingQueueType}
             setEditingQueueType={settings.setEditingQueueType}
@@ -62,7 +74,7 @@ const SettingsForm: React.FC = () => {
       <TabsContent value="sms" className="space-y-6">
         <SmsSettings />
       </TabsContent>
-      
+
       <TabsContent value="line" className="space-y-6">
         <LineSettings />
       </TabsContent>

@@ -1,9 +1,8 @@
-
-import React from 'react';
-import { Queue, QueueStatus, Patient } from '@/integrations/supabase/schema';
-import QueueTabs from './QueueTabs';
-import DashboardSidebar from './DashboardSidebar';
-import QueueAnalytics from './QueueAnalytics';
+import React from "react";
+import { Queue, QueueStatus, Patient } from "@/integrations/supabase/schema";
+import QueueTabs from "./QueueTabs";
+import DashboardSidebar from "./DashboardSidebar";
+import QueueAnalytics from "./QueueAnalytics";
 
 interface DashboardContentProps {
   waitingQueues: Queue[];
@@ -11,7 +10,10 @@ interface DashboardContentProps {
   completedQueues: Queue[];
   skippedQueues: Queue[];
   patients: Patient[];
-  onUpdateStatus: (queueId: string, status: QueueStatus) => Promise<Queue | null>;
+  onUpdateStatus: (
+    queueId: string,
+    status: QueueStatus
+  ) => Promise<Queue | null>;
   onCallQueue: (queueId: string) => Promise<Queue | null>;
   onRecallQueue: (queueId: string) => void;
 }
@@ -24,18 +26,18 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   patients,
   onUpdateStatus,
   onCallQueue,
-  onRecallQueue
+  onRecallQueue,
 }) => {
   return (
     <div className="space-y-6">
-      <QueueAnalytics 
+      <QueueAnalytics
         completedQueues={completedQueues}
         waitingQueues={waitingQueues}
         activeQueues={activeQueues}
         skippedQueues={skippedQueues}
         className="mb-6"
       />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">
           <QueueTabs
@@ -49,7 +51,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             onRecallQueue={onRecallQueue}
           />
         </div>
-        
+
         <DashboardSidebar completedQueuesLength={completedQueues.length} />
       </div>
     </div>
